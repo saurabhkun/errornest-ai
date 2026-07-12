@@ -1,4 +1,5 @@
 import { db } from "@/lib/db/client";
+import { groupEvent } from "@/lib/services/grouping";
 
 /**
  * Enqueues an event for background processing.
@@ -8,25 +9,7 @@ import { db } from "@/lib/db/client";
 export async function enqueueEventProcessing(eventId: string, retryCount = 0): Promise<void> {
   const processTask = async () => {
     try {
-      // Find the event
-      const event = await db.event.findUnique({
-        where: { id: eventId },
-      });
-
-      if (!event) {
-        console.error(`Event ${eventId} not found for queue processing.`);
-        return;
-      }
-
-      // Update event to indicate processing has started/completed
-      // Note: Grouping and fingerprinting logic is out-of-scope for M3 and will be implemented in M4.
-      await db.event.update({
-        where: { id: eventId },
-        data: {
-          processedAt: new Date(),
-          processingError: null,
-        },
-      });
+      await groupEvent(eventId);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error(`Error processing event ${eventId} (attempt ${retryCount + 1}):`, error);

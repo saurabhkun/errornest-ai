@@ -1,23 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock the database client before importing POST handler
 vi.mock("@/lib/db/client", () => {
   const mockDb = {
     apiKey: {
-      findUnique: vi.fn(),
+      findUnique: vi.fn(() => Promise.resolve(null)),
     },
     event: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      create: vi.fn(() => Promise.resolve({})),
+      update: vi.fn(() => Promise.resolve({})),
+      findFirst: vi.fn(() => Promise.resolve(null)),
     },
     environment: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      create: vi.fn(() => Promise.resolve({})),
     },
     release: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      create: vi.fn(() => Promise.resolve({})),
+    },
+    issue: {
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      create: vi.fn(() => Promise.resolve({})),
+      update: vi.fn(() => Promise.resolve({})),
+    },
+    issueActivity: {
+      create: vi.fn(() => Promise.resolve({})),
     },
   };
   return { db: mockDb };
@@ -180,7 +189,24 @@ describe("Event Ingestion API Route Unit Tests", () => {
       id: "rel-1",
       version: "1.0.0",
     } as any);
-    vi.mocked(db.event.create).mockResolvedValueOnce({ id: "evt-12345" } as any);
+
+    const mockEvent = {
+      id: "evt-12345",
+      projectId: "proj-1",
+      errorType: "TimeoutError",
+      message: "Database connection timeout",
+      level: "ERROR",
+      normalizedFrames: [],
+      clientSentAt: new Date(),
+      userExternalId: "user_42",
+      tags: {},
+      rawPayload: {},
+    };
+
+    vi.mocked(db.event.create).mockResolvedValueOnce(mockEvent as any);
+    vi.mocked(db.event.findUnique).mockResolvedValueOnce(mockEvent as any);
+    vi.mocked(db.issue.findUnique).mockResolvedValueOnce(null);
+    vi.mocked(db.issue.create).mockResolvedValueOnce({ id: "issue-123" } as any);
 
     const res = await POST(req);
     expect(res.status).toBe(202);

@@ -349,7 +349,13 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
           <button className="border-b-2 border-emerald-500 pb-3 text-sm font-semibold text-white">
             API Keys
           </button>
-          <div className="pb-3 text-sm text-zinc-600 cursor-not-allowed select-none">
+          <Link
+            href={`/app/${org.slug}/projects/${project.slug}/issues`}
+            className="pb-3 text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Issues List
+          </Link>
+          <div className="pb-3 text-sm text-zinc-550 cursor-not-allowed select-none">
             General Settings (Coming soon)
           </div>
         </div>
