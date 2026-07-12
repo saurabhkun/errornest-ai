@@ -63,7 +63,8 @@ describe("ErrorNest Client SDK", () => {
     });
 
     const testError = new TypeError("Cannot read properties of null");
-    testError.stack = "TypeError: Cannot read properties of null\n    at Object.test (test.ts:10:15)";
+    testError.stack =
+      "TypeError: Cannot read properties of null\n    at Object.test (test.ts:10:15)";
 
     ErrorNestSDK.captureException(testError, {
       level: "fatal",
@@ -110,7 +111,9 @@ describe("ErrorNest Client SDK", () => {
 
     const reportCall = fetchMock.mock.calls[1];
     const payload = JSON.parse(reportCall[1].body);
-    expect(payload.message).toContain("Fetch failed: 500 Internal Server Error for https://some-api.com/users");
+    expect(payload.message).toContain(
+      "Fetch failed: 500 Internal Server Error for https://some-api.com/users"
+    );
     expect(payload.level).toBe("error");
     expect(payload.tags.type).toBe("fetch_error");
   });

@@ -3,16 +3,16 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  FolderGit2, 
-  LayoutDashboard, 
-  AlertOctagon, 
-  Layers, 
-  Users2, 
-  Settings2, 
-  ChevronLeft, 
+import {
+  FolderGit2,
+  LayoutDashboard,
+  AlertOctagon,
+  Layers,
+  Users2,
+  Settings2,
+  ChevronLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -78,9 +78,7 @@ export function Sidebar({ org }: SidebarProps) {
           EN
         </div>
         {!isCollapsed && (
-          <span className="font-semibold text-lg tracking-tight text-white">
-            ErrorNest
-          </span>
+          <span className="font-semibold text-lg tracking-tight text-white">ErrorNest</span>
         )}
       </div>
 
@@ -157,7 +155,11 @@ export function Sidebar({ org }: SidebarProps) {
         className="absolute bottom-16 -right-3 h-6 w-6 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center hover:bg-zinc-800 hover:border-zinc-700 text-zinc-400 cursor-pointer shadow-md shrink-0 z-10"
         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
-        {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+        {isCollapsed ? (
+          <ChevronRight className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        )}
       </button>
     </aside>
   );

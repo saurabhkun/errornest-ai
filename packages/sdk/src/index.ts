@@ -55,7 +55,8 @@ export function captureException(error: unknown, options?: CaptureOptions) {
     return;
   }
 
-  const err = error instanceof Error ? error : new Error(typeof error === "string" ? error : String(error));
+  const err =
+    error instanceof Error ? error : new Error(typeof error === "string" ? error : String(error));
   const payload = {
     message: err.message || "Unknown error",
     errorType: err.name || "Error",
@@ -149,7 +150,13 @@ export function captureConsoleError() {
 
     // Convert args to message
     const msg = args
-      .map((arg) => (arg instanceof Error ? arg.message : typeof arg === "object" ? JSON.stringify(arg) : String(arg)))
+      .map((arg) =>
+        arg instanceof Error
+          ? arg.message
+          : typeof arg === "object"
+            ? JSON.stringify(arg)
+            : String(arg)
+      )
       .join(" ");
 
     // Check if any arg is an Error object to capture its stack trace
@@ -158,7 +165,11 @@ export function captureConsoleError() {
     if (errorArg) {
       captureException(errorArg, { level: "error", tags: { source: "console.error" } });
     } else {
-      captureMessage(msg, { level: "error", errorType: "ConsoleError", tags: { source: "console.error" } });
+      captureMessage(msg, {
+        level: "error",
+        errorType: "ConsoleError",
+        tags: { source: "console.error" },
+      });
     }
   };
 }

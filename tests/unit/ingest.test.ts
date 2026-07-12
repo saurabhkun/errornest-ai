@@ -172,8 +172,14 @@ describe("Event Ingestion API Route Unit Tests", () => {
       },
     } as any);
 
-    vi.mocked(db.environment.findUnique).mockResolvedValueOnce({ id: "env-1", name: "production" } as any);
-    vi.mocked(db.release.findUnique).mockResolvedValueOnce({ id: "rel-1", version: "1.0.0" } as any);
+    vi.mocked(db.environment.findUnique).mockResolvedValueOnce({
+      id: "env-1",
+      name: "production",
+    } as any);
+    vi.mocked(db.release.findUnique).mockResolvedValueOnce({
+      id: "rel-1",
+      version: "1.0.0",
+    } as any);
     vi.mocked(db.event.create).mockResolvedValueOnce({ id: "evt-12345" } as any);
 
     const res = await POST(req);

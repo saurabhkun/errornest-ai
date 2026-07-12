@@ -18,7 +18,8 @@ function safeCompare(a: string, b: string): boolean {
 }
 
 // Map level string to EventLevel enum
-const EventLevelSchema = z.enum(["FATAL", "ERROR", "WARNING", "INFO", "fatal", "error", "warning", "info"])
+const EventLevelSchema = z
+  .enum(["FATAL", "ERROR", "WARNING", "INFO", "fatal", "error", "warning", "info"])
   .transform((val) => {
     const upper = val.toUpperCase();
     if (upper === "FATAL") return "FATAL";
@@ -35,11 +36,14 @@ const ingestPayloadSchema = z.object({
   stackTrace: z.string().optional(),
   release: z.string().optional(),
   tags: z.record(z.string(), z.any()).optional().default({}),
-  user: z.object({
-    id: z.string().or(z.number()).transform(String).optional(),
-    email: z.string().optional(),
-    username: z.string().optional(),
-  }).catchall(z.any()).optional(),
+  user: z
+    .object({
+      id: z.string().or(z.number()).transform(String).optional(),
+      email: z.string().optional(),
+      username: z.string().optional(),
+    })
+    .catchall(z.any())
+    .optional(),
   clientSentAt: z.string().datetime({ precision: 3 }).or(z.string()).optional(),
   transaction: z.string().optional(),
   sourceContext: z.any().optional(),
@@ -51,7 +55,9 @@ function parseStackTraceFrames(stack?: string): Array<Record<string, any>> {
   const frames: Array<Record<string, any>> = [];
   const lines = stack.split("\n");
   for (const line of lines) {
-    const match = line.match(/^\s*at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/) || line.match(/^\s*at\s+(.+?):(\d+):(\d+)/);
+    const match =
+      line.match(/^\s*at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/) ||
+      line.match(/^\s*at\s+(.+?):(\d+):(\d+)/);
     if (match) {
       if (match.length === 5) {
         frames.push({
@@ -83,7 +89,13 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "Missing or invalid authorization header", requestId } },
+        {
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Missing or invalid authorization header",
+            requestId,
+          },
+        },
         { status: 401, headers: responseHeaders }
       );
     }
@@ -114,7 +126,13 @@ export async function POST(request: NextRequest) {
     const project = apiKeyRecord.project;
     if (project.deletedAt || project.status === "ARCHIVED") {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Cannot ingest events into a deleted or archived project", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Cannot ingest events into a deleted or archived project",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }
@@ -127,7 +145,13 @@ export async function POST(request: NextRequest) {
     const contentLength = request.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > maxBytes) {
       return NextResponse.json(
-        { error: { code: "PAYLOAD_TOO_LARGE", message: `Payload exceeds maximum limit of ${maxBytes} bytes`, requestId } },
+        {
+          error: {
+            code: "PAYLOAD_TOO_LARGE",
+            message: `Payload exceeds maximum limit of ${maxBytes} bytes`,
+            requestId,
+          },
+        },
         { status: 413, headers: responseHeaders }
       );
     }
@@ -135,7 +159,13 @@ export async function POST(request: NextRequest) {
     const bodyText = await request.text();
     if (Buffer.byteLength(bodyText, "utf-8") > maxBytes) {
       return NextResponse.json(
-        { error: { code: "PAYLOAD_TOO_LARGE", message: `Payload exceeds maximum limit of ${maxBytes} bytes`, requestId } },
+        {
+          error: {
+            code: "PAYLOAD_TOO_LARGE",
+            message: `Payload exceeds maximum limit of ${maxBytes} bytes`,
+            requestId,
+          },
+        },
         { status: 413, headers: responseHeaders }
       );
     }
@@ -147,7 +177,13 @@ export async function POST(request: NextRequest) {
       const ratelimitHeaders = new Headers(responseHeaders);
       ratelimitHeaders.set("Retry-After", String(retryAfter));
       return NextResponse.json(
-        { error: { code: "TOO_MANY_REQUESTS", message: "Rate limit exceeded. Please try again later.", requestId } },
+        {
+          error: {
+            code: "TOO_MANY_REQUESTS",
+            message: "Rate limit exceeded. Please try again later.",
+            requestId,
+          },
+        },
         { status: 429, headers: ratelimitHeaders }
       );
     }

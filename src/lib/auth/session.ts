@@ -15,9 +15,7 @@ export async function getSessionUser() {
     where: { deletedAt: null },
   });
   if (!fallbackUser) {
-    throw new Error(
-      "No active users found in the database. Please run migrations and seed first."
-    );
+    throw new Error("No active users found in the database. Please run migrations and seed first.");
   }
   return fallbackUser;
 }

@@ -20,9 +20,7 @@ describe("API Key Utilities", () => {
     const hash2 = hashApiKey(testKey);
 
     expect(hash1).toBe(hash2);
-    expect(hash1).toBe(
-      crypto.createHash("sha256").update(testKey).digest("hex")
-    );
+    expect(hash1).toBe(crypto.createHash("sha256").update(testKey).digest("hex"));
   });
 
   it("should generate unique API keys each invocation", () => {

@@ -4,18 +4,18 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as ErrorNestSDK from "@errornest/sdk";
-import { 
-  Key, 
-  Trash2, 
-  RefreshCw, 
-  Copy, 
-  Check, 
-  ShieldAlert, 
-  ChevronRight, 
-  Code, 
+import {
+  Key,
+  Trash2,
+  RefreshCw,
+  Copy,
+  Check,
+  ShieldAlert,
+  ChevronRight,
+  Code,
   AlertTriangle,
   X,
-  Plus
+  Plus,
 } from "lucide-react";
 
 interface SerializedKey {
@@ -62,7 +62,10 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
 
   // States for sending test error
   const [isSendingTest, setIsSendingTest] = useState(false);
-  const [testSendResult, setTestSendResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testSendResult, setTestSendResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   const handleSendTestError = async () => {
     setIsSendingTest(true);
@@ -94,7 +97,9 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
       });
 
       // 3. Send test error
-      const testError = new Error("This is a live test error generated from the ErrorNest Dashboard!");
+      const testError = new Error(
+        "This is a live test error generated from the ErrorNest Dashboard!"
+      );
       testError.name = "TestException";
 
       ErrorNestSDK.captureException(testError, {
@@ -124,7 +129,6 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
       setTimeout(() => {
         router.refresh();
       }, 1000);
-
     } catch (err) {
       console.error(err);
       const msg = err instanceof Error ? err.message : "Failed to send test error";
@@ -319,16 +323,18 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
       </div>
 
       {testSendResult && (
-        <div className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-255 ${
-          testSendResult.success 
-            ? "bg-emerald-950/20 border-emerald-900/60 text-emerald-400" 
-            : "bg-red-950/20 border-red-900/60 text-red-400"
-        }`}>
+        <div
+          className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-255 ${
+            testSendResult.success
+              ? "bg-emerald-950/20 border-emerald-900/60 text-emerald-400"
+              : "bg-red-950/20 border-red-900/60 text-red-400"
+          }`}
+        >
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 shrink-0" />
             <span className="text-sm font-medium">{testSendResult.message}</span>
           </div>
-          <button 
+          <button
             onClick={() => setTestSendResult(null)}
             className="text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer"
           >
@@ -437,7 +443,8 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
         <div>
           <h2 className="text-base font-bold text-red-400">Destructive Actions</h2>
           <p className="text-xs text-zinc-400 mt-1">
-            Permanently delete this project. All associated issues, events, API keys, and configurations will be immediately soft-deleted.
+            Permanently delete this project. All associated issues, events, API keys, and
+            configurations will be immediately soft-deleted.
           </p>
         </div>
         <button
@@ -472,13 +479,16 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
                     <div>
                       <p className="font-semibold">Copy this API key now!</p>
                       <p className="text-amber-300 mt-1">
-                        For security reasons, this key will not be shown again. Save it securely to configure your SDK.
+                        For security reasons, this key will not be shown again. Save it securely to
+                        configure your SDK.
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-400">Plain-text API Key</label>
+                    <label className="text-xs font-semibold text-zinc-400">
+                      Plain-text API Key
+                    </label>
                     <div className="flex gap-2">
                       <code className="flex-1 bg-zinc-950 px-3 py-2 rounded-lg text-emerald-400 font-mono text-sm break-all border border-zinc-800 select-all">
                         {createdRawKey}
@@ -624,10 +634,13 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
                   )}
 
                   <p className="text-sm text-zinc-300 leading-normal">
-                    Are you sure you want to rotate the API key <span className="font-semibold text-white">&quot;{rotatingKey.name}&quot;</span>?
+                    Are you sure you want to rotate the API key{" "}
+                    <span className="font-semibold text-white">&quot;{rotatingKey.name}&quot;</span>
+                    ?
                   </p>
                   <p className="text-xs text-zinc-500 leading-normal">
-                    Any server or client actively using this key will immediately start failing to ingest errors until updated with the new rotated key value.
+                    Any server or client actively using this key will immediately start failing to
+                    ingest errors until updated with the new rotated key value.
                   </p>
 
                   <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800/80 mt-6">
@@ -683,10 +696,12 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
                 )}
 
                 <p className="text-sm text-zinc-300 leading-normal">
-                  Are you sure you want to permanently revoke the API key <span className="font-semibold text-white">&quot;{revokingKey.name}&quot;</span>?
+                  Are you sure you want to permanently revoke the API key{" "}
+                  <span className="font-semibold text-white">&quot;{revokingKey.name}&quot;</span>?
                 </p>
                 <p className="text-xs text-red-400/90 leading-normal">
-                  This action is irreversible and the token will no longer be allowed to write event ingestion payloads.
+                  This action is irreversible and the token will no longer be allowed to write event
+                  ingestion payloads.
                 </p>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800/80 mt-6">
@@ -740,7 +755,9 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
                 )}
 
                 <p className="text-sm text-zinc-300 leading-normal">
-                  This will delete the project <span className="font-semibold text-white">&quot;{project.name}&quot;</span> and all of its associated logs and ingestion configurations.
+                  This will delete the project{" "}
+                  <span className="font-semibold text-white">&quot;{project.name}&quot;</span> and
+                  all of its associated logs and ingestion configurations.
                 </p>
                 <p className="text-xs text-red-400 leading-normal font-semibold">
                   This action is final. Make sure you have detached the SDK before deleting.

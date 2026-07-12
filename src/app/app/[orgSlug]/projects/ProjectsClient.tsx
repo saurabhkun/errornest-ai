@@ -111,7 +111,8 @@ export function ProjectsClient({ org, initialProjects }: ProjectsClientProps) {
           </div>
           <h2 className="text-xl font-semibold text-white">No projects found</h2>
           <p className="text-sm text-zinc-400 mt-2 max-w-sm">
-            To start collecting runtime errors, create your first project and link it with our client SDK.
+            To start collecting runtime errors, create your first project and link it with our
+            client SDK.
           </p>
           <button
             onClick={() => setIsModalOpen(true)}

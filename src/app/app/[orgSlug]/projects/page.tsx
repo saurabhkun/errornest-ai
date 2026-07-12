@@ -4,11 +4,7 @@ import { db } from "@/lib/db/client";
 import { redirect } from "next/navigation";
 import { ProjectsClient } from "./ProjectsClient";
 
-export default async function ProjectsPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>;
-}) {
+export default async function ProjectsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const user = await getSessionUser();
   if (!user) {
@@ -17,10 +13,7 @@ export default async function ProjectsPage({
 
   const org = await db.organization.findFirst({
     where: {
-      OR: [
-        { slug: orgSlug },
-        { id: orgSlug }
-      ]
+      OR: [{ slug: orgSlug }, { id: orgSlug }],
     },
   });
 

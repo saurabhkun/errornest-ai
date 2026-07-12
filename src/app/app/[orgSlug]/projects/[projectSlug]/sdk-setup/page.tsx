@@ -17,10 +17,7 @@ export default async function SdkSetupPage({
 
   const org = await db.organization.findFirst({
     where: {
-      OR: [
-        { slug: orgSlug },
-        { id: orgSlug }
-      ]
+      OR: [{ slug: orgSlug }, { id: orgSlug }],
     },
   });
 
@@ -31,10 +28,7 @@ export default async function SdkSetupPage({
   const project = await db.project.findFirst({
     where: {
       organizationId: org.id,
-      OR: [
-        { slug: projectSlug },
-        { id: projectSlug }
-      ],
+      OR: [{ slug: projectSlug }, { id: projectSlug }],
       deletedAt: null,
     },
   });

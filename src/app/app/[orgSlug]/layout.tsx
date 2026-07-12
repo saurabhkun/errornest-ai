@@ -20,10 +20,7 @@ export default async function AppLayout({
 
   const org = await db.organization.findFirst({
     where: {
-      OR: [
-        { slug: orgSlug },
-        { id: orgSlug }
-      ]
+      OR: [{ slug: orgSlug }, { id: orgSlug }],
     },
   });
 
@@ -66,9 +63,7 @@ export default async function AppLayout({
 
         {/* Scrollable page body */}
         <main className="flex-1 overflow-y-auto px-6 py-6 md:px-8">
-          <div className="max-w-6xl w-full mx-auto pb-12">
-            {children}
-          </div>
+          <div className="max-w-6xl w-full mx-auto pb-12">{children}</div>
         </main>
       </div>
     </div>

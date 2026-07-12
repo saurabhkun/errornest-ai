@@ -32,12 +32,14 @@ export async function enqueueEventProcessing(eventId: string, retryCount = 0): P
       console.error(`Error processing event ${eventId} (attempt ${retryCount + 1}):`, error);
 
       // Record the error in the event record
-      await db.event.update({
-        where: { id: eventId },
-        data: {
-          processingError: message,
-        },
-      }).catch((e) => console.error("Failed to write processing error:", e));
+      await db.event
+        .update({
+          where: { id: eventId },
+          data: {
+            processingError: message,
+          },
+        })
+        .catch((e) => console.error("Failed to write processing error:", e));
 
       // Retry queue job with exponential backoff (max 3 total attempts)
       if (retryCount < 2) {

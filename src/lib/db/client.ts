@@ -10,7 +10,8 @@ const databaseUrl = process.env.DATABASE_URL;
 let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === "production") {
-  const url = databaseUrl || "postgresql://postgres:postgres@localhost:5432/errornest?sslmode=disable";
+  const url =
+    databaseUrl || "postgresql://postgres:postgres@localhost:5432/errornest?sslmode=disable";
   const adapter = new PrismaNeon({ connectionString: url });
   prisma = new PrismaClient({ adapter });
 } else {

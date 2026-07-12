@@ -2,14 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { 
-  ChevronRight, 
-  Copy, 
-  Check, 
-  Terminal, 
-  ExternalLink, 
+import {
+  ChevronRight,
+  Copy,
+  Check,
+  Terminal,
+  ExternalLink,
   ArrowLeft,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 
 interface SdkSetupClientProps {
@@ -30,7 +30,7 @@ export function SdkSetupClient({ org, project, keyPlaceholder }: SdkSetupClientP
   const [selectedPlatform, setSelectedPlatform] = useState(
     ["react", "node", "python", "go"].includes(project.platform) ? project.platform : "react"
   );
-  
+
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
   const handleCopy = (text: string, id: string) => {
@@ -39,11 +39,14 @@ export function SdkSetupClient({ org, project, keyPlaceholder }: SdkSetupClientP
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  const guides: Record<string, {
-    installCmd: string;
-    initCode: string;
-    exampleCode: string;
-  }> = {
+  const guides: Record<
+    string,
+    {
+      installCmd: string;
+      initCode: string;
+      exampleCode: string;
+    }
+  > = {
     react: {
       installCmd: `npm install @errornest/react`,
       initCode: `import React from 'react';
@@ -156,7 +159,7 @@ func main() {
     // Intentionally panic
     panic("critical system transaction failure!")
 }`,
-    }
+    },
   };
 
   const activeGuide = guides[selectedPlatform] || guides.react;
@@ -169,7 +172,10 @@ func main() {
           Projects
         </Link>
         <ChevronRight className="h-3 w-3 text-zinc-600" />
-        <Link href={`/app/${org.slug}/projects/${project.slug}`} className="hover:text-zinc-200 transition-colors">
+        <Link
+          href={`/app/${org.slug}/projects/${project.slug}`}
+          className="hover:text-zinc-200 transition-colors"
+        >
           {project.name}
         </Link>
         <ChevronRight className="h-3 w-3 text-zinc-600" />
@@ -222,7 +228,7 @@ func main() {
               </span>
               <h2 className="text-base font-bold text-white">Install the SDK package</h2>
             </div>
-            
+
             <div className="relative">
               <pre className="bg-zinc-950 px-4 py-3 rounded-lg text-zinc-300 font-mono text-xs overflow-x-auto border border-zinc-800">
                 <code>{activeGuide.installCmd}</code>
@@ -247,10 +253,13 @@ func main() {
               <span className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 text-xs font-bold text-zinc-300 flex items-center justify-center">
                 2
               </span>
-              <h2 className="text-base font-bold text-white">Initialize inside your main entrypoint</h2>
+              <h2 className="text-base font-bold text-white">
+                Initialize inside your main entrypoint
+              </h2>
             </div>
             <p className="text-xs text-zinc-400">
-              Provide your project credentials. The SDK captures unhandled runtime crashes automatically.
+              Provide your project credentials. The SDK captures unhandled runtime crashes
+              automatically.
             </p>
 
             <div className="relative">
@@ -280,7 +289,8 @@ func main() {
               <h2 className="text-base font-bold text-white">Capture manual exceptions or logs</h2>
             </div>
             <p className="text-xs text-zinc-400">
-              You can enrich captured errors with contextual flags, custom tags, or key-value structures.
+              You can enrich captured errors with contextual flags, custom tags, or key-value
+              structures.
             </p>
 
             <div className="relative">
@@ -310,7 +320,8 @@ func main() {
               <span>Developer Reference</span>
             </h2>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Find complete integration details, config structures, rate limits, and custom tags in the comprehensive platform documentation.
+              Find complete integration details, config structures, rate limits, and custom tags in
+              the comprehensive platform documentation.
             </p>
             <div className="pt-2">
               <a
@@ -331,7 +342,8 @@ func main() {
               <span>Verify Ingestion</span>
             </h2>
             <p className="text-xs text-zinc-400 leading-relaxed">
-              Once initialized, send a mock error. If successful, events will begin populating your dashboard streams instantly.
+              Once initialized, send a mock error. If successful, events will begin populating your
+              dashboard streams instantly.
             </p>
           </div>
         </div>
