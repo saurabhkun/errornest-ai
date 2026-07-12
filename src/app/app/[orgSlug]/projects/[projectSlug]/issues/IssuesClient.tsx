@@ -13,6 +13,12 @@ import {
   AlertTriangle,
   RotateCcw,
   Plus,
+  Bookmark,
+  Trash2,
+  UserCheck,
+  EyeOff,
+  CheckCircle,
+  X,
 } from "lucide-react";
 
 interface IssuesClientProps {
@@ -59,6 +65,19 @@ interface Issue {
   } | null;
 }
 
+interface SavedFilter {
+  id: string;
+  name: string;
+  search: string;
+  status: string;
+  level: string;
+  envFilter: string;
+  releaseFilter: string;
+  assigneeFilter: string;
+  sortField: "lastSeenAt" | "occurrenceCount" | "firstSeenAt";
+  sortDirection: "asc" | "desc";
+}
+
 export function IssuesClient({
   org,
   project,
@@ -85,11 +104,33 @@ export function IssuesClient({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
 
+  // Bulk selection state
+  const [selectedIssueIds, setSelectedIssueIds] = useState<string[]>([]);
+  const [isBulkActionRunning, setIsBulkActionRunning] = useState(false);
+
+  // Saved Filters state
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
+  const [newFilterName, setNewFilterName] = useState("");
+  const [showSaveModal, setShowSaveModal] = useState(false);
+
   // Data state
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load Saved Filters
+  useEffect(() => {
+    const key = `errornest:saved-filters:${project.id}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        setSavedFilters(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, [project.id]);
 
   // Debounce search
   useEffect(() => {
@@ -108,6 +149,21 @@ export function IssuesClient({
     setCurrentCursor(null);
     setCursorHistory([]);
   };
+
+  // Reset selection on filter/pagination changes
+  useEffect(() => {
+    setSelectedIssueIds([]);
+  }, [
+    debouncedSearch,
+    status,
+    level,
+    envFilter,
+    releaseFilter,
+    assigneeFilter,
+    sortField,
+    sortDirection,
+    currentCursor,
+  ]);
 
   const fetchIssues = useCallback(async () => {
     setIsLoading(true);
@@ -195,9 +251,12 @@ export function IssuesClient({
         const body = await res.json();
         throw new Error(body.error?.message || "Failed to update status");
       }
-      // Update local state
       setIssues((prev) =>
-        prev.map((iss) => (iss.id === issueId ? { ...iss, status: newStatus as "UNRESOLVED" | "RESOLVED" | "REOPENED" | "IGNORED" } : iss))
+        prev.map((iss) =>
+          iss.id === issueId
+            ? { ...iss, status: newStatus as "UNRESOLVED" | "RESOLVED" | "REOPENED" | "IGNORED" }
+            : iss
+        )
       );
     } catch (err) {
       alert(err instanceof Error ? err.message : "Error updating status");
@@ -239,6 +298,161 @@ export function IssuesClient({
     setAssigneeFilter("");
     setCurrentCursor(null);
     setCursorHistory([]);
+  };
+
+  // Bulk Actions Handlers
+  const handleBulkStatusChange = async (newStatus: string) => {
+    if (selectedIssueIds.length === 0) return;
+    setIsBulkActionRunning(true);
+    try {
+      const res = await fetch("/api/v1/issues/bulk", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          issueIds: selectedIssueIds,
+          status: newStatus,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Bulk status update failed");
+      }
+      // Optimistic updates
+      setIssues((prev) =>
+        prev.map((iss) =>
+          selectedIssueIds.includes(iss.id)
+            ? { ...iss, status: newStatus as "UNRESOLVED" | "RESOLVED" | "REOPENED" | "IGNORED" }
+            : iss
+        )
+      );
+      setSelectedIssueIds([]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Bulk status change error");
+    } finally {
+      setIsBulkActionRunning(false);
+    }
+  };
+
+  const handleBulkAssign = async (userId: string | null) => {
+    if (selectedIssueIds.length === 0) return;
+    setIsBulkActionRunning(true);
+    try {
+      const res = await fetch("/api/v1/issues/bulk", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          issueIds: selectedIssueIds,
+          assigneeUserId: userId,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Bulk assignment failed");
+      }
+      const matchedMember = userId ? members.find((m) => m.id === userId) : null;
+      setIssues((prev) =>
+        prev.map((iss) =>
+          selectedIssueIds.includes(iss.id)
+            ? {
+                ...iss,
+                assigneeUserId: userId,
+                assignee: matchedMember
+                  ? { id: userId!, displayName: matchedMember.displayName, email: matchedMember.email }
+                  : null,
+              }
+            : iss
+        )
+      );
+      setSelectedIssueIds([]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Bulk assign error");
+    } finally {
+      setIsBulkActionRunning(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIssueIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete these ${selectedIssueIds.length} issues?`)) return;
+    setIsBulkActionRunning(true);
+    try {
+      const res = await fetch("/api/v1/issues/bulk", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          issueIds: selectedIssueIds,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Bulk delete failed");
+      }
+      setIssues((prev) => prev.filter((iss) => !selectedIssueIds.includes(iss.id)));
+      setSelectedIssueIds([]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Bulk delete error");
+    } finally {
+      setIsBulkActionRunning(false);
+    }
+  };
+
+  // Selection toggles
+  const isAllSelected = issues.length > 0 && selectedIssueIds.length === issues.length;
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIssueIds([]);
+    } else {
+      setSelectedIssueIds(issues.map((i) => i.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIssueIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Saved Filters functions
+  const handleSaveFilter = () => {
+    if (!newFilterName.trim()) return;
+    const filterObj: SavedFilter = {
+      id: crypto.randomUUID(),
+      name: newFilterName.trim(),
+      search,
+      status,
+      level,
+      envFilter,
+      releaseFilter,
+      assigneeFilter,
+      sortField,
+      sortDirection,
+    };
+    const updated = [...savedFilters, filterObj];
+    setSavedFilters(updated);
+    localStorage.setItem(`errornest:saved-filters:${project.id}`, JSON.stringify(updated));
+    setNewFilterName("");
+    setShowSaveModal(false);
+  };
+
+  const handleApplyFilter = (f: SavedFilter) => {
+    setSearch(f.search);
+    setDebouncedSearch(f.search);
+    setStatus(f.status);
+    setLevel(f.level);
+    setEnvFilter(f.envFilter);
+    setReleaseFilter(f.releaseFilter);
+    setAssigneeFilter(f.assigneeFilter);
+    setSortField(f.sortField);
+    setSortDirection(f.sortDirection);
+    setCurrentCursor(null);
+    setCursorHistory([]);
+  };
+
+  const handleDeleteFilter = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = savedFilters.filter((f) => f.id !== id);
+    setSavedFilters(updated);
+    localStorage.setItem(`errornest:saved-filters:${project.id}`, JSON.stringify(updated));
   };
 
   const getLevelBadgeColor = (lvl: string) => {
@@ -289,7 +503,7 @@ export function IssuesClient({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative pb-20">
       {/* Breadcrumbs */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-xs text-zinc-400">
@@ -335,15 +549,52 @@ export function IssuesClient({
             <span className="text-sm font-bold text-white flex items-center gap-2">
               <Filter className="h-4 w-4 text-emerald-500" /> Filters
             </span>
-            {(status || level || envFilter || releaseFilter || assigneeFilter) && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleResetFilters}
+                onClick={() => setShowSaveModal(true)}
                 className="text-[11px] text-zinc-400 hover:text-emerald-400 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Save current filters"
               >
-                <RotateCcw className="h-3 w-3" /> Reset
+                <Bookmark className="h-3.5 w-3.5" /> Save
               </button>
-            )}
+              {(status || level || envFilter || releaseFilter || assigneeFilter || search) && (
+                <button
+                  onClick={handleResetFilters}
+                  className="text-[11px] text-zinc-400 hover:text-rose-400 flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <RotateCcw className="h-3 w-3" /> Reset
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Saved Filters list */}
+          {savedFilters.length > 0 && (
+            <div className="space-y-1.5 pb-3 border-b border-zinc-850">
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+                Saved Filters
+              </label>
+              <div className="space-y-1">
+                {savedFilters.map((f) => (
+                  <div
+                    key={f.id}
+                    onClick={() => handleApplyFilter(f)}
+                    className="flex items-center justify-between bg-zinc-950/40 hover:bg-zinc-950/90 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 cursor-pointer group transition-all"
+                  >
+                    <span className="text-xs font-semibold text-zinc-300 group-hover:text-emerald-400 transition-colors truncate max-w-[130px]">
+                      {f.name}
+                    </span>
+                    <button
+                      onClick={(e) => handleDeleteFilter(f.id, e)}
+                      className="text-zinc-500 hover:text-red-400 p-0.5 rounded transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Search */}
           <div className="space-y-1.5">
@@ -522,7 +773,7 @@ export function IssuesClient({
                     ? "No issues match the active filter criteria. Try adjusting filters or searching another keyword."
                     : "No exceptions captured yet for this project. Configure the SDK and throw an error to see it here!"}
                 </p>
-                {(debouncedSearch || status || level || envFilter || releaseFilter || assigneeFilter) ? (
+                {debouncedSearch || status || level || envFilter || releaseFilter || assigneeFilter ? (
                   <button
                     onClick={handleResetFilters}
                     className="px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white"
@@ -542,6 +793,14 @@ export function IssuesClient({
               <table className="w-full text-left border-collapse text-xs text-zinc-300">
                 <thead>
                   <tr className="border-b border-zinc-800 bg-zinc-950/40 text-zinc-400 font-medium">
+                    <th className="p-4 w-10">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-zinc-800 text-emerald-600 bg-zinc-950 accent-emerald-500 h-3.5 w-3.5 cursor-pointer"
+                      />
+                    </th>
                     <th className="p-4 w-24">Severity</th>
                     <th className="p-4 w-28">Status</th>
                     <th className="p-4">Title</th>
@@ -551,79 +810,97 @@ export function IssuesClient({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60">
-                  {issues.map((issue) => (
-                    <tr key={issue.id} className="hover:bg-zinc-900/15 group">
-                      {/* Severity */}
-                      <td className="p-4">
-                        <span
-                          className={`px-2 py-0.5 rounded border text-[10px] font-bold tracking-wide uppercase ${getLevelBadgeColor(
-                            issue.level
-                          )}`}
-                        >
-                          {issue.level}
-                        </span>
-                      </td>
+                  {issues.map((issue) => {
+                    const isSelected = selectedIssueIds.includes(issue.id);
+                    return (
+                      <tr
+                        key={issue.id}
+                        className={`hover:bg-zinc-900/15 group transition-colors ${
+                          isSelected ? "bg-emerald-500/5 hover:bg-emerald-500/10" : ""
+                        }`}
+                      >
+                        {/* Checkbox */}
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(issue.id)}
+                            className="rounded border-zinc-800 text-emerald-600 bg-zinc-950 accent-emerald-500 h-3.5 w-3.5 cursor-pointer"
+                          />
+                        </td>
 
-                      {/* Status */}
-                      <td className="p-4">
-                        <select
-                          value={issue.status}
-                          onChange={(e) => handleStatusChange(issue.id, e.target.value)}
-                          className={`bg-zinc-950/80 border border-zinc-800/80 rounded px-1.5 py-0.5 text-[10px] font-semibold cursor-pointer outline-none focus:border-emerald-500 ${getStatusBadgeColor(
-                            issue.status
-                          )}`}
-                        >
-                          <option value="UNRESOLVED">Unresolved</option>
-                          <option value="RESOLVED">Resolved</option>
-                          <option value="REOPENED">Reopened</option>
-                          <option value="IGNORED">Ignored</option>
-                        </select>
-                      </td>
-
-                      {/* Title */}
-                      <td className="p-4">
-                        <div className="flex flex-col gap-0.5 max-w-md">
-                          <Link
-                            href={`/app/${org.slug}/projects/${project.slug}/issues/${issue.id}`}
-                            className="font-bold text-white hover:text-emerald-400 transition-colors text-[13px] truncate"
+                        {/* Severity */}
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-0.5 rounded border text-[10px] font-bold tracking-wide uppercase ${getLevelBadgeColor(
+                              issue.level
+                            )}`}
                           >
-                            {issue.title}
-                          </Link>
-                          <span className="text-[10px] text-zinc-500 font-mono truncate">
-                            {issue.errorType} — {issue.normalizedMessage}
+                            {issue.level}
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Occurrences */}
-                      <td className="p-4 text-right font-mono font-bold text-zinc-200">
-                        {issue.occurrenceCount.toLocaleString()}
-                      </td>
+                        {/* Status */}
+                        <td className="p-4">
+                          <select
+                            value={issue.status}
+                            onChange={(e) => handleStatusChange(issue.id, e.target.value)}
+                            className={`bg-zinc-950/80 border border-zinc-800/80 rounded px-1.5 py-0.5 text-[10px] font-semibold cursor-pointer outline-none focus:border-emerald-500 ${getStatusBadgeColor(
+                              issue.status
+                            )}`}
+                          >
+                            <option value="UNRESOLVED">Unresolved</option>
+                            <option value="RESOLVED">Resolved</option>
+                            <option value="REOPENED">Reopened</option>
+                            <option value="IGNORED">Ignored</option>
+                          </select>
+                        </td>
 
-                      {/* Last Seen */}
-                      <td className="p-4 text-zinc-400 font-medium">
-                        {getRelativeTime(issue.lastSeenAt)}
-                      </td>
+                        {/* Title */}
+                        <td className="p-4">
+                          <div className="flex flex-col gap-0.5 max-w-md">
+                            <Link
+                              href={`/app/${org.slug}/projects/${project.slug}/issues/${issue.id}`}
+                              className="font-bold text-white hover:text-emerald-400 transition-colors text-[13px] truncate"
+                            >
+                              {issue.title}
+                            </Link>
+                            <span className="text-[10px] text-zinc-500 font-mono truncate">
+                              {issue.errorType} — {issue.normalizedMessage}
+                            </span>
+                          </div>
+                        </td>
 
-                      {/* Assignee */}
-                      <td className="p-4">
-                        <select
-                          value={issue.assigneeUserId || ""}
-                          onChange={(e) =>
-                            handleAssigneeChange(issue.id, e.target.value || null)
-                          }
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded px-2 py-1 text-[11px] text-zinc-300 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-                        >
-                          <option value="">Unassigned</option>
-                          {members.map((member) => (
-                            <option key={member.id} value={member.id}>
-                              {member.displayName}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
+                        {/* Occurrences */}
+                        <td className="p-4 text-right font-mono font-bold text-zinc-200">
+                          {issue.occurrenceCount.toLocaleString()}
+                        </td>
+
+                        {/* Last Seen */}
+                        <td className="p-4 text-zinc-400 font-medium">
+                          {getRelativeTime(issue.lastSeenAt)}
+                        </td>
+
+                        {/* Assignee */}
+                        <td className="p-4">
+                          <select
+                            value={issue.assigneeUserId || ""}
+                            onChange={(e) =>
+                              handleAssigneeChange(issue.id, e.target.value || null)
+                            }
+                            className="w-full bg-zinc-950 border border-zinc-850 rounded px-2 py-1 text-[11px] text-zinc-300 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                          >
+                            <option value="">Unassigned</option>
+                            {members.map((member) => (
+                              <option key={member.id} value={member.id}>
+                                {member.displayName}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -653,6 +930,120 @@ export function IssuesClient({
           </div>
         </div>
       </div>
+
+      {/* Floating Glassmorphic Bulk Action Toolbar */}
+      {selectedIssueIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-950/80 backdrop-blur-xl border border-zinc-800 shadow-2xl rounded-full py-3 px-6 flex items-center gap-6 z-50 text-xs animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-2 pr-4 border-r border-zinc-800 font-bold text-white">
+            <CheckCircle className="h-4 w-4 text-emerald-400 animate-pulse" />
+            <span>{selectedIssueIds.length} Selected</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleBulkStatusChange("RESOLVED")}
+              disabled={isBulkActionRunning}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              Resolve
+            </button>
+
+            <button
+              onClick={() => handleBulkStatusChange("IGNORED")}
+              disabled={isBulkActionRunning}
+              className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-zinc-200 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <EyeOff className="h-3.5 w-3.5" /> Ignore
+            </button>
+
+            {/* Assign drop-down */}
+            <div className="relative group">
+              <button
+                disabled={isBulkActionRunning}
+                className="px-3 py-1.5 bg-zinc-850 hover:bg-zinc-800 disabled:opacity-50 text-zinc-200 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <UserCheck className="h-3.5 w-3.5" /> Assign
+              </button>
+              <div className="absolute bottom-full right-0 mb-2 w-48 bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl py-1 hidden group-hover:block hover:block z-50 text-xs">
+                <button
+                  onClick={() => handleBulkAssign(null)}
+                  className="w-full text-left px-3 py-2 text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                >
+                  Unassign
+                </button>
+                {members.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => handleBulkAssign(m.id)}
+                    className="w-full text-left px-3 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+                  >
+                    {m.displayName}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleBulkDelete}
+              disabled={isBulkActionRunning}
+              className="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-900/40 disabled:opacity-50 text-rose-300 rounded-lg font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </button>
+          </div>
+
+          <button
+            onClick={() => setSelectedIssueIds([])}
+            className="text-zinc-500 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Save Filter Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full space-y-4">
+            <div>
+              <h3 className="text-lg font-extrabold text-white">Save Current Filters</h3>
+              <p className="text-xs text-zinc-400 mt-1">
+                Store the currently active search query and filtering configuration.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block">
+                Filter Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g., Unresolved Production Errors"
+                value={newFilterName}
+                onChange={(e) => setNewFilterName(e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 text-zinc-400 hover:text-white rounded-lg text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveFilter}
+                disabled={!newFilterName.trim()}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-colors"
+              >
+                Save Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,9 +18,20 @@ import {
   Terminal,
   ChevronDown,
   ChevronUp,
+  Copy,
+  Edit2,
+  Trash2,
+  Check,
+  CornerDownRight,
 } from "lucide-react";
 
 interface Member {
+  id: string;
+  displayName: string;
+  email: string;
+}
+
+interface CurrentUser {
   id: string;
   displayName: string;
   email: string;
@@ -38,6 +49,7 @@ interface IssueDetailClientProps {
   };
   issueId: string;
   members: Member[];
+  currentUser: CurrentUser;
 }
 
 interface Issue {
@@ -101,7 +113,9 @@ interface Comment {
   id: string;
   body: string;
   createdAt: string;
+  authorUserId: string;
   author: {
+    id: string;
     displayName: string;
     email: string;
     avatarUrl: string | null;
@@ -113,6 +127,7 @@ export function IssueDetailClient({
   project,
   issueId,
   members,
+  currentUser,
 }: IssueDetailClientProps) {
   // Tab State
   const [activeTab, setActiveTab] = useState<"overview" | "occurrences" | "tags" | "context">(
@@ -125,14 +140,30 @@ export function IssueDetailClient({
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
 
+  // Interactive Event occurrence Navigation
+  const [activeEventIndex, setActiveEventIndex] = useState(0);
+
+  // Stack Trace custom states
+  const [collapseLibraryFrames, setCollapseLibraryFrames] = useState(true);
+  const [showRawStackTrace, setShowRawStackTrace] = useState(false);
+  const [expandedFrameIndex, setExpandedFrameIndex] = useState<number | null>(null);
+  const [copiedStack, setCopiedStack] = useState(false);
+
   // Loading States
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [newCommentBody, setNewCommentBody] = useState("");
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+
+  // Comment Editing States
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentBody, setEditingCommentBody] = useState("");
+
+  // Raw JSON display state
   const [rawJsonExpanded, setRawJsonExpanded] = useState(false);
 
-  // Latest event helper
-  const latestEvent = events[0] || null;
+  // Active event helper
+  const activeEvent = events[activeEventIndex] || null;
 
   const fetchAllData = useCallback(async () => {
     setIsLoading(true);
@@ -228,6 +259,17 @@ export function IssueDetailClient({
     }
   };
 
+  // Extract Mention User IDs from text
+  const extractMentionedUserIds = (text: string) => {
+    const ids: string[] = [];
+    members.forEach((m) => {
+      if (text.includes(`@${m.displayName}`)) {
+        ids.push(m.id);
+      }
+    });
+    return ids;
+  };
+
   // Handle Comment Submission
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,10 +277,12 @@ export function IssueDetailClient({
     setIsSubmittingComment(true);
 
     try {
+      const mentionedUserIds = extractMentionedUserIds(newCommentBody);
+
       const res = await fetch(`/api/v1/issues/${issueId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: newCommentBody }),
+        body: JSON.stringify({ body: newCommentBody, mentionedUserIds }),
       });
       if (!res.ok) {
         const body = await res.json();
@@ -260,6 +304,153 @@ export function IssueDetailClient({
     } finally {
       setIsSubmittingComment(false);
     }
+  };
+
+  // Handle Comment Edit
+  const handleCommentEdit = async (commentId: string) => {
+    if (!editingCommentBody.trim()) return;
+    try {
+      const mentionedUserIds = extractMentionedUserIds(editingCommentBody);
+
+      const res = await fetch(`/api/v1/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: editingCommentBody, mentionedUserIds }),
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Failed to edit comment");
+      }
+      const updated = await res.json();
+      setComments((prev) => prev.map((c) => (c.id === commentId ? updated.data : c)));
+      setEditingCommentId(null);
+      setEditingCommentBody("");
+
+      // Refresh activities list
+      const activitiesRes = await fetch(`/api/v1/issues/${issueId}/activity`);
+      if (activitiesRes.ok) {
+        const actData = await activitiesRes.json();
+        setActivities(actData.data || []);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error editing comment");
+    }
+  };
+
+  // Handle Comment Delete
+  const handleCommentDelete = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this comment?")) return;
+    try {
+      const res = await fetch(`/api/v1/comments/${commentId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Failed to delete comment");
+      }
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+
+      // Refresh activities list
+      const activitiesRes = await fetch(`/api/v1/issues/${issueId}/activity`);
+      if (activitiesRes.ok) {
+        const actData = await activitiesRes.json();
+        setActivities(actData.data || []);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error deleting comment");
+    }
+  };
+
+  // Helper to copy stack trace
+  const handleCopyStackTrace = () => {
+    if (!activeEvent) return;
+    let stackText = "";
+    if (showRawStackTrace && activeEvent.rawStackTrace) {
+      stackText = activeEvent.rawStackTrace;
+    } else {
+      stackText = activeEvent.normalizedFrames
+        .map((f) => `  at ${f.functionName || "anonymous"} (${f.fileName || "unknown"}:${f.lineNumber || "?"}:${f.columnNumber || "?"})`)
+        .join("\n");
+    }
+
+    navigator.clipboard.writeText(stackText);
+    setCopiedStack(true);
+    setTimeout(() => setCopiedStack(false), 2000);
+  };
+
+  // Helper to parse device & request context from payload
+  const getContextDetails = () => {
+    if (!activeEvent || !activeEvent.rawPayload) return null;
+    const payload = activeEvent.rawPayload;
+
+    // Search common tags/contexts inside raw payload
+    const browser = (payload.browser as string) || (payload.tags as Record<string, string>)?.browser || "Unknown Browser";
+    const os = (payload.os as string) || (payload.tags as Record<string, string>)?.os || "Unknown OS";
+    const url = (payload.url as string) || (payload.tags as Record<string, string>)?.url || "Unknown URL";
+    const method = (payload.method as string) || (payload.tags as Record<string, string>)?.method || "N/A";
+    const ipAddress = (payload.ipAddress as string) || "Unknown IP";
+    const userAgent = (payload.userAgent as string) || "Unknown User Agent";
+    const sdkVersion = (payload.sdkVersion as string) || (payload.tags as Record<string, string>)?.sdkVersion || "Unknown SDK";
+    const environment = activeEvent.environment.name;
+    const release = activeEvent.release?.version || "No release tag";
+
+    return { browser, os, url, method, ipAddress, userAgent, sdkVersion, environment, release };
+  };
+
+  // Mock Source Code Preview context builder
+  const getMockSourceCode = (functionName: string, line: number, file: string) => {
+    const func = functionName || "anonymous";
+    const cleanFile = file.split("/").pop() || "index.js";
+    return [
+      { line: line - 2, code: `// helper definition inside ${cleanFile}`, isError: false },
+      { line: line - 1, code: `function validateAndExecute(payload) {`, isError: false },
+      { line: line, code: `  const response = ${func}(payload); // Error triggered here`, isError: true },
+      { line: line + 1, code: `  return serializeResponse(response);`, isError: false },
+      { line: line + 2, code: `}`, isError: false },
+    ];
+  };
+
+  // Stack Frame Filter Helper
+  const isFrameInApp = (fileName: string) => {
+    const file = (fileName || "").toLowerCase();
+    return (
+      file &&
+      !file.includes("node_modules") &&
+      !file.includes("next/dist") &&
+      !file.includes("next/server") &&
+      !file.includes("node:internal") &&
+      !file.includes("webpack-internal")
+    );
+  };
+
+  // Custom Markdown Parser
+  const parseMarkdown = (text: string) => {
+    let html = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    // **bold**
+    html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+    // *italic*
+    html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+    // `code`
+    html = html.replace(/`(.*?)`/g, '<code class="bg-zinc-950 px-1 py-0.5 rounded font-mono text-[11px] text-emerald-300 border border-zinc-800">$1</code>');
+    // Links: [text](url)
+    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // Mentions highlighting: @DisplayName
+    members.forEach((m) => {
+      const mentionText = `@${m.displayName}`;
+      if (html.includes(mentionText)) {
+        html = html.replaceAll(
+          mentionText,
+          `<span class="bg-emerald-950/80 text-emerald-400 border border-emerald-800/40 rounded px-1.5 py-0.5 font-bold tracking-wide scale-90 inline-block">@${m.displayName}</span>`
+        );
+      }
+    });
+
+    return html;
   };
 
   const getLevelBadgeColor = (lvl: string) => {
@@ -309,19 +500,6 @@ export function IssueDetailClient({
     }
   };
 
-  // Stack Frame Filter Helper
-  const isFrameInApp = (fileName: string) => {
-    const file = (fileName || "").toLowerCase();
-    return (
-      file &&
-      !file.includes("node_modules") &&
-      !file.includes("next/dist") &&
-      !file.includes("next/server") &&
-      !file.includes("node:internal") &&
-      !file.includes("webpack-internal")
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -352,6 +530,8 @@ export function IssueDetailClient({
       </div>
     );
   }
+
+  const contexts = getContextDetails();
 
   return (
     <div className="space-y-6">
@@ -418,19 +598,19 @@ export function IssueDetailClient({
             <div className="text-zinc-500 font-medium mb-0.5">Last Seen</div>
             <div className="text-zinc-300 font-semibold">{getRelativeTime(issue.lastSeenAt)}</div>
           </div>
-          {latestEvent?.environment && (
+          {activeEvent?.environment && (
             <div>
               <div className="text-zinc-500 font-medium mb-0.5">Environment</div>
               <div className="inline-block px-1.5 py-0.5 rounded bg-zinc-950 text-zinc-400 font-mono text-[10px] font-semibold border border-zinc-850">
-                {latestEvent.environment.name}
+                {activeEvent.environment.name}
               </div>
             </div>
           )}
-          {latestEvent?.release && (
+          {activeEvent?.release && (
             <div>
               <div className="text-zinc-500 font-medium mb-0.5">Release</div>
               <div className="inline-block px-1.5 py-0.5 rounded bg-zinc-950 text-emerald-400 font-mono text-[10px] font-semibold border border-zinc-850">
-                {latestEvent.release.version}
+                {activeEvent.release.version}
               </div>
             </div>
           )}
@@ -488,55 +668,187 @@ export function IssueDetailClient({
           {/* OVERVIEW PANEL: STACK TRACE */}
           {activeTab === "overview" && (
             <div className="space-y-6">
+              {/* Event occurrence navigation */}
+              {events.length > 1 && (
+                <div className="bg-zinc-950/45 border border-zinc-850 rounded-xl p-3.5 flex items-center justify-between text-xs">
+                  <div className="text-zinc-400 font-medium">
+                    Event occurrence{" "}
+                    <span className="font-mono font-bold text-white bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                      {activeEventIndex + 1}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-mono font-bold text-white bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                      {events.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setActiveEventIndex((prev) => Math.max(0, prev - 1));
+                        setExpandedFrameIndex(null);
+                      }}
+                      disabled={activeEventIndex === 0}
+                      className="px-2.5 py-1 border border-zinc-800 hover:border-zinc-700 bg-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-300 hover:text-white font-semibold rounded cursor-pointer transition-colors"
+                    >
+                      Prev
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveEventIndex((prev) => Math.min(events.length - 1, prev + 1));
+                        setExpandedFrameIndex(null);
+                      }}
+                      disabled={activeEventIndex === events.length - 1}
+                      className="px-2.5 py-1 border border-zinc-800 hover:border-zinc-700 bg-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed text-zinc-300 hover:text-white font-semibold rounded cursor-pointer transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Stack Trace Box */}
               <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-zinc-850 pb-3">
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <Terminal className="h-4 w-4 text-emerald-500" /> Stack Trace
                   </h3>
-                  <span className="text-[10px] text-zinc-500">Showing top frames</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowRawStackTrace(!showRawStackTrace)}
+                      className="text-[10px] px-2 py-1 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white transition-colors"
+                    >
+                      {showRawStackTrace ? "Prettier Stack" : "Raw Text"}
+                    </button>
+
+                    {!showRawStackTrace && (
+                      <button
+                        onClick={() => setCollapseLibraryFrames(!collapseLibraryFrames)}
+                        className="text-[10px] px-2 py-1 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {collapseLibraryFrames ? "Show Lib Frames" : "Hide Lib Frames"}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleCopyStackTrace}
+                      className="text-[10px] px-2.5 py-1 rounded bg-zinc-800 text-zinc-200 hover:text-white font-bold flex items-center gap-1 transition-all"
+                      title="Copy Stack Trace"
+                    >
+                      {copiedStack ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                      {copiedStack ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
                 </div>
 
-                {!latestEvent || latestEvent.normalizedFrames.length === 0 ? (
+                {!activeEvent || (!activeEvent.rawStackTrace && activeEvent.normalizedFrames.length === 0) ? (
                   <div className="p-8 text-center text-zinc-500 text-xs italic">
                     No stack trace frames captured for this event.
                   </div>
+                ) : showRawStackTrace ? (
+                  <pre className="p-4 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[11px] text-zinc-400 overflow-x-auto max-h-96 leading-relaxed select-all">
+                    {activeEvent.rawStackTrace || "No raw stack trace text details."}
+                  </pre>
                 ) : (
-                  <div className="space-y-2.5">
-                    {latestEvent.normalizedFrames.map((frame, index) => {
-                      const isApp = isFrameInApp(frame.fileName || "");
-                      return (
-                        <div
-                          key={index}
-                          className={`flex items-start gap-4 p-3 rounded-lg border text-xs font-mono transition-colors ${
-                            isApp
-                              ? "bg-zinc-950 border-zinc-800/80 hover:bg-zinc-950/80"
-                              : "bg-zinc-900/20 border-zinc-900/40 text-zinc-500 hover:bg-zinc-900/35"
-                          }`}
-                        >
-                          <div className="flex flex-col gap-1 flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className={`font-bold ${isApp ? "text-emerald-400" : "text-zinc-400"}`}>
-                                {frame.functionName || "anonymous"}
-                              </span>
-                              {isApp && (
-                                <span className="bg-emerald-950/50 text-emerald-400 border border-emerald-800/50 text-[9px] px-1 rounded font-bold uppercase scale-90">
-                                  in-app
-                                </span>
+                  <div className="space-y-2">
+                    {(() => {
+                      // Process frames and render
+                      const items: React.ReactNode[] = [];
+                      const frames = activeEvent.normalizedFrames;
+                      let index = 0;
+
+                      while (index < frames.length) {
+                        const frame = frames[index];
+                        const isApp = isFrameInApp(frame.fileName || "");
+
+                        if (collapseLibraryFrames && !isApp) {
+                          // Find consecutive non-app frames
+                          let count = 0;
+                          const startIdx = index;
+                          while (index < frames.length && !isFrameInApp(frames[index].fileName || "")) {
+                            count++;
+                            index++;
+                          }
+
+                          const localIndex = startIdx;
+                          items.push(
+                            <div
+                              key={`collapse-${startIdx}`}
+                              className="text-[11px] font-semibold font-mono p-2.5 rounded-lg border border-zinc-850/50 bg-zinc-950/20 text-zinc-500 text-center flex items-center justify-between px-4 select-none hover:bg-zinc-950/40 cursor-pointer"
+                              onClick={() => setCollapseLibraryFrames(false)}
+                            >
+                              <span>Collapsed {count} library frames</span>
+                              <span className="text-[9px] text-zinc-600 underline">Expand All</span>
+                            </div>
+                          );
+                        } else {
+                          const currentIdx = index;
+                          const isExpanded = expandedFrameIndex === currentIdx;
+                          items.push(
+                            <div
+                              key={`frame-${currentIdx}`}
+                              className={`flex flex-col rounded-lg border text-xs font-mono transition-all overflow-hidden ${
+                                isApp
+                                  ? "bg-zinc-950 border-zinc-800/80 hover:bg-zinc-950/80"
+                                  : "bg-zinc-900/10 border-zinc-900/40 text-zinc-500 hover:bg-zinc-900/20"
+                              }`}
+                            >
+                              <div
+                                onClick={() => isApp && setExpandedFrameIndex(isExpanded ? null : currentIdx)}
+                                className={`flex items-start justify-between gap-4 p-3 ${isApp ? "cursor-pointer" : ""}`}
+                              >
+                                <div className="flex flex-col gap-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`font-bold ${isApp ? "text-emerald-400" : "text-zinc-400"}`}>
+                                      {frame.functionName || "anonymous"}
+                                    </span>
+                                    {isApp && (
+                                      <span className="bg-emerald-950/50 text-emerald-400 border border-emerald-800/50 text-[9px] px-1 rounded font-bold uppercase scale-90">
+                                        in-app
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-zinc-500 truncate select-all">
+                                    {frame.fileName || "unknown file"}
+                                  </span>
+                                </div>
+                                {(frame.lineNumber || frame.columnNumber) && (
+                                  <div className="text-zinc-400 shrink-0 font-semibold bg-zinc-900/80 px-2 py-1 rounded border border-zinc-850 text-[11px]">
+                                    line {frame.lineNumber || "?"}
+                                    {frame.columnNumber && `:${frame.columnNumber}`}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Source Code Mock Preview context */}
+                              {isApp && isExpanded && frame.lineNumber && (
+                                <div className="border-t border-zinc-900 bg-zinc-950/90 p-4">
+                                  <div className="text-[10px] text-zinc-500 mb-2 flex items-center gap-1 uppercase tracking-wider font-bold">
+                                    <CornerDownRight className="h-3 w-3 text-emerald-500" /> Source Code Context Preview
+                                  </div>
+                                  <div className="space-y-1 font-mono text-[11px] leading-relaxed">
+                                    {getMockSourceCode(frame.functionName || "", frame.lineNumber, frame.fileName || "").map((cLine, cIdx) => (
+                                      <div
+                                        key={cIdx}
+                                        className={`flex gap-3 px-2 py-0.5 rounded ${
+                                          cLine.isError
+                                            ? "bg-rose-500/10 text-rose-300 border-l-2 border-rose-500"
+                                            : "text-zinc-400"
+                                        }`}
+                                      >
+                                        <span className="text-zinc-600 text-right w-8 select-none">{cLine.line}</span>
+                                        <span className="whitespace-pre truncate">{cLine.code}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               )}
                             </div>
-                            <span className="text-[11px] text-zinc-500 truncate select-all">
-                              {frame.fileName || "unknown file"}
-                            </span>
-                          </div>
-                          {(frame.lineNumber || frame.columnNumber) && (
-                            <div className="text-zinc-400 shrink-0 font-semibold bg-zinc-900/80 px-2 py-1 rounded border border-zinc-850 text-[11px]">
-                              line {frame.lineNumber || "?"}
-                              {frame.columnNumber && `:${frame.columnNumber}`}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          );
+                          index++;
+                        }
+                      }
+                      return items;
+                    })()}
                   </div>
                 )}
               </div>
@@ -550,8 +862,17 @@ export function IssueDetailClient({
                 <h3 className="text-xs font-bold text-white">Event Occurrences timeline</h3>
               </div>
               <div className="divide-y divide-zinc-850">
-                {events.map((evt) => (
-                  <div key={evt.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs">
+                {events.map((evt, idx) => (
+                  <div
+                    key={evt.id}
+                    onClick={() => {
+                      setActiveEventIndex(idx);
+                      setActiveTab("overview");
+                    }}
+                    className={`p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs cursor-pointer hover:bg-zinc-950/30 transition-colors ${
+                      idx === activeEventIndex ? "bg-emerald-500/5 border-l-2 border-emerald-500" : ""
+                    }`}
+                  >
                     <div className="space-y-1">
                       <div className="font-bold text-white flex items-center gap-2">
                         <span className="font-mono text-zinc-400">{evt.id}</span>
@@ -582,15 +903,15 @@ export function IssueDetailClient({
           {activeTab === "tags" && (
             <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl p-5 space-y-4">
               <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2">
-                Latest Event Tags
+                Occurrence Tags ({activeEventIndex + 1} of {events.length})
               </h3>
-              {!latestEvent || !latestEvent.tags || Object.keys(latestEvent.tags).length === 0 ? (
+              {!activeEvent || !activeEvent.tags || Object.keys(activeEvent.tags).length === 0 ? (
                 <div className="p-6 text-center text-zinc-500 text-xs italic">
-                  No tags associated with this event.
+                  No tags associated with this event occurrence.
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Object.entries(latestEvent.tags).map(([key, value]) => (
+                  {Object.entries(activeEvent.tags).map(([key, value]) => (
                     <div
                       key={key}
                       className="flex items-center justify-between p-3 rounded-lg border border-zinc-800 bg-zinc-950/60 font-mono text-xs"
@@ -614,16 +935,16 @@ export function IssueDetailClient({
                 <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2 flex items-center gap-2">
                   <User className="h-4 w-4 text-emerald-500" /> User Context
                 </h3>
-                {latestEvent && latestEvent.userExternalId ? (
+                {activeEvent && activeEvent.userExternalId ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900">
                       <span className="block text-zinc-500 font-bold text-[10px] uppercase mb-1">
                         User External ID
                       </span>
-                      <span className="text-zinc-200">{latestEvent.userExternalId}</span>
+                      <span className="text-zinc-200">{activeEvent.userExternalId}</span>
                     </div>
-                    {latestEvent.userContext &&
-                      Object.entries(latestEvent.userContext).map(([key, val]) => (
+                    {activeEvent.userContext &&
+                      Object.entries(activeEvent.userContext).map(([key, val]) => (
                         <div
                           key={key}
                           className="p-3 bg-zinc-950 rounded-lg border border-zinc-900"
@@ -637,10 +958,55 @@ export function IssueDetailClient({
                   </div>
                 ) : (
                   <div className="p-4 text-center text-zinc-500 text-xs italic">
-                    No user context was provided with this event.
+                    No user context was provided with this event occurrence.
                   </div>
                 )}
               </div>
+
+              {/* Parsed Device & Request Context Grid */}
+              {contexts && (
+                <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl p-5 space-y-4">
+                  <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2 flex items-center gap-2">
+                    <Monitor className="h-4 w-4 text-emerald-500" /> Device & Request Context
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs font-mono">
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">OS</span>
+                      <span className="text-zinc-200 font-semibold">{contexts.os}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Browser</span>
+                      <span className="text-zinc-200 font-semibold">{contexts.browser}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">SDK Version</span>
+                      <span className="text-zinc-200 font-semibold">{contexts.sdkVersion}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">IP Address</span>
+                      <span className="text-zinc-200 font-semibold">{contexts.ipAddress}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Method</span>
+                      <span className="text-emerald-400 font-bold">{contexts.method}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Release</span>
+                      <span className="text-zinc-200 font-semibold truncate block">{contexts.release}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70 sm:col-span-2 md:col-span-3">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Request URL</span>
+                      <span className="text-emerald-400 font-semibold break-all">{contexts.url}</span>
+                    </div>
+                    <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70 sm:col-span-2 md:col-span-3">
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">User Agent</span>
+                      <span className="text-zinc-400 font-semibold break-all text-[11px] leading-relaxed">
+                        {contexts.userAgent}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Raw Payload JSON */}
               <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl p-5 space-y-4">
@@ -653,10 +1019,21 @@ export function IssueDetailClient({
                   </span>
                   {rawJsonExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
-                {rawJsonExpanded && latestEvent && (
-                  <pre className="p-4 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[11px] text-zinc-300 overflow-x-auto max-h-96 leading-relaxed select-all">
-                    {JSON.stringify(latestEvent.rawPayload, null, 2)}
-                  </pre>
+                {rawJsonExpanded && activeEvent && (
+                  <div className="relative group">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(JSON.stringify(activeEvent.rawPayload, null, 2));
+                        alert("JSON Payload copied!");
+                      }}
+                      className="absolute right-3 top-3 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 text-[10px] text-zinc-300 rounded border border-zinc-800 font-bold transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      Copy JSON
+                    </button>
+                    <pre className="p-4 rounded-lg bg-zinc-950 border border-zinc-850 font-mono text-[11px] text-zinc-300 overflow-x-auto max-h-96 leading-relaxed select-all">
+                      {JSON.stringify(activeEvent.rawPayload, null, 2)}
+                    </pre>
+                  </div>
                 )}
               </div>
             </div>
@@ -740,44 +1117,148 @@ export function IssueDetailClient({
             </h3>
 
             {/* Comments List */}
-            <div className="space-y-3.5 max-h-60 overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-72 overflow-y-auto pr-1">
               {comments.length === 0 ? (
                 <div className="text-center text-zinc-600 text-xs italic py-4">
                   No comments yet. Start the conversation!
                 </div>
               ) : (
-                comments.map((comment) => (
-                  <div key={comment.id} className="space-y-1 text-xs">
-                    <div className="flex items-center justify-between text-[10px] text-zinc-500">
-                      <span className="font-bold text-zinc-300">
-                        {comment.author.displayName}
-                      </span>
-                      <span>{getRelativeTime(comment.createdAt)}</span>
+                comments.map((comment) => {
+                  const isEditing = editingCommentId === comment.id;
+                  const isAuthor = comment.authorUserId === currentUser.id;
+
+                  return (
+                    <div key={comment.id} className="space-y-1 text-xs border-b border-zinc-850/40 pb-2.5 last:border-0 last:pb-0">
+                      <div className="flex items-center justify-between text-[10px] text-zinc-500">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-zinc-300">
+                            {comment.author.displayName}
+                          </span>
+                          {comment.author.id === currentUser.id && (
+                            <span className="bg-zinc-800 text-zinc-400 px-1 rounded text-[8px] uppercase font-bold">You</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span>{getRelativeTime(comment.createdAt)}</span>
+                          {!isEditing && isAuthor && (
+                            <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => {
+                                  setEditingCommentId(comment.id);
+                                  setEditingCommentBody(comment.body);
+                                }}
+                                className="text-zinc-400 hover:text-emerald-400 p-0.5 transition-colors"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={() => handleCommentDelete(comment.id)}
+                                className="text-zinc-400 hover:text-rose-400 p-0.5 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-2 mt-1">
+                          <textarea
+                            value={editingCommentBody}
+                            onChange={(e) => setEditingCommentBody(e.target.value)}
+                            rows={2}
+                            className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none font-mono"
+                          />
+                          <div className="flex items-center justify-end gap-2 text-[10px]">
+                            <button
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditingCommentBody("");
+                              }}
+                              className="px-2 py-1 text-zinc-400 hover:text-white"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleCommentEdit(comment.id)}
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-bold"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="p-2.5 bg-zinc-950 border border-zinc-900 rounded-lg text-zinc-300 leading-normal break-words markdown-content"
+                          dangerouslySetInnerHTML={{ __html: parseMarkdown(comment.body) }}
+                        />
+                      )}
                     </div>
-                    <div className="p-2.5 bg-zinc-950 border border-zinc-900 rounded-lg text-zinc-300 leading-normal break-words">
-                      {comment.body}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
             {/* Post Comment Form */}
-            <form onSubmit={handleCommentSubmit} className="space-y-2">
-              <textarea
-                placeholder="Add a comment..."
-                value={newCommentBody}
-                onChange={(e) => setNewCommentBody(e.target.value)}
-                rows={2}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none"
-              />
-              <button
-                type="submit"
-                disabled={!newCommentBody.trim() || isSubmittingComment}
-                className="w-full bg-zinc-800 border border-zinc-700 hover:bg-zinc-755 hover:text-white disabled:opacity-50 text-zinc-300 font-semibold text-xs py-1.5 rounded-lg cursor-pointer transition-colors"
-              >
-                {isSubmittingComment ? "Posting..." : "Post Comment"}
-              </button>
+            <form onSubmit={handleCommentSubmit} className="space-y-2 relative">
+              <div className="relative">
+                <textarea
+                  placeholder="Add a comment... (Supports **bold**, *italic*, `code`, @DisplayName)"
+                  value={newCommentBody}
+                  onChange={(e) => {
+                    setNewCommentBody(e.target.value);
+                    // Open mention dropdown when typing @
+                    if (e.target.value.endsWith("@")) {
+                      setShowMentionDropdown(true);
+                    } else if (!e.target.value.includes("@") || e.target.value.endsWith(" ")) {
+                      setShowMentionDropdown(false);
+                    }
+                  }}
+                  rows={2}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 resize-none"
+                />
+
+                {/* Mention Helper Dropdown */}
+                {showMentionDropdown && (
+                  <div className="absolute bottom-full left-0 mb-2 w-full max-h-32 overflow-y-auto bg-zinc-950 border border-zinc-800 rounded-lg shadow-xl z-50 text-xs py-1">
+                    <div className="px-2.5 py-1 text-[9px] font-bold text-zinc-500 uppercase border-b border-zinc-900 tracking-wider">
+                      Mention Organization Member
+                    </div>
+                    {members.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          setNewCommentBody((prev) => prev + m.displayName + " ");
+                          setShowMentionDropdown(false);
+                        }}
+                        className="w-full text-left px-2.5 py-1.5 hover:bg-zinc-900 text-zinc-300 hover:text-white transition-colors"
+                      >
+                        {m.displayName} ({m.email})
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowMentionDropdown(!showMentionDropdown)}
+                  className="px-2 py-1 text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded border border-zinc-800 font-bold transition-all flex items-center gap-1"
+                >
+                  <span>@</span> Mention
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={!newCommentBody.trim() || isSubmittingComment}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-1.5 px-4 rounded-lg cursor-pointer transition-colors"
+                >
+                  {isSubmittingComment ? "Posting..." : "Post Comment"}
+                </button>
+              </div>
             </form>
           </div>
 
@@ -825,6 +1306,8 @@ export function IssueDetailClient({
                           </span>
                         </>
                       )}
+                      {act.type === "COMMENT_EDITED" && "edited a comment"}
+                      {act.type === "COMMENT_DELETED" && "deleted a comment"}
                     </p>
                   </div>
                 ))

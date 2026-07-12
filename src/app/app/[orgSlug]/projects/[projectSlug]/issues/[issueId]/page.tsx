@@ -64,6 +64,7 @@ export default async function IssueDetailPage({
       project={{ id: project.id, name: project.name, slug: project.slug }}
       issueId={issueId}
       members={members}
+      currentUser={{ id: user.id, displayName: user.displayName, email: user.email }}
     />
   );
 }

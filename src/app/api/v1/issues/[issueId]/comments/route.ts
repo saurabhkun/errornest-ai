@@ -153,6 +153,30 @@ export async function POST(
 
     const { body, mentionedUserIds } = parsed.data;
 
+    // Validate mentioned users belong to organization
+    if (mentionedUserIds && mentionedUserIds.length > 0) {
+      const activeMembers = await db.membership.findMany({
+        where: {
+          organizationId: issue.project.organizationId,
+          userId: { in: mentionedUserIds },
+          status: "ACTIVE",
+        },
+      });
+
+      if (activeMembers.length !== mentionedUserIds.length) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "One or more mentioned users are not active members of this organization",
+              requestId,
+            },
+          },
+          { status: 400, headers: responseHeaders }
+        );
+      }
+    }
+
     // Create comment
     const comment = await db.issueComment.create({
       data: {
