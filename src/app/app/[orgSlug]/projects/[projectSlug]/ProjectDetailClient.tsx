@@ -355,6 +355,12 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
           >
             Issues List
           </Link>
+          <Link
+            href={`/app/${org.slug}/projects/${project.slug}/alerts`}
+            className="pb-3 text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Alert Rules
+          </Link>
           <div className="pb-3 text-sm text-zinc-550 cursor-not-allowed select-none">
             General Settings (Coming soon)
           </div>

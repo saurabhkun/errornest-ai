@@ -60,7 +60,10 @@ describe("Bulk Issue Operations API Unit Tests", () => {
 
       const req = new NextRequest("http://localhost/api/v1/issues/bulk", {
         method: "PATCH",
-        body: JSON.stringify({ issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"], status: "RESOLVED" }),
+        body: JSON.stringify({
+          issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"],
+          status: "RESOLVED",
+        }),
       });
 
       const res = await PATCH(req);
@@ -84,7 +87,10 @@ describe("Bulk Issue Operations API Unit Tests", () => {
 
       const req = new NextRequest("http://localhost/api/v1/issues/bulk", {
         method: "PATCH",
-        body: JSON.stringify({ issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"], status: "RESOLVED" }),
+        body: JSON.stringify({
+          issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"],
+          status: "RESOLVED",
+        }),
       });
 
       const res = await PATCH(req);
@@ -108,7 +114,10 @@ describe("Bulk Issue Operations API Unit Tests", () => {
 
       const req = new NextRequest("http://localhost/api/v1/issues/bulk", {
         method: "PATCH",
-        body: JSON.stringify({ issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"], status: "RESOLVED" }),
+        body: JSON.stringify({
+          issueIds: ["f47ac10b-58cc-4372-a567-0e02b2c3d479"],
+          status: "RESOLVED",
+        }),
       });
 
       const res = await PATCH(req);

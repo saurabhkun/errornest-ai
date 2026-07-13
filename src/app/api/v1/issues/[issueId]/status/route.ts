@@ -107,7 +107,11 @@ export async function PATCH(
       }
     }
 
-    const beforeState = { status: currentStatus, resolvedAt: issue.resolvedAt, resolvedByUserId: issue.resolvedByUserId };
+    const beforeState = {
+      status: currentStatus,
+      resolvedAt: issue.resolvedAt,
+      resolvedByUserId: issue.resolvedByUserId,
+    };
 
     // Update issue data
     const updateData: {
@@ -133,7 +137,11 @@ export async function PATCH(
       data: updateData,
     });
 
-    const afterState = { status: updatedIssue.status, resolvedAt: updatedIssue.resolvedAt, resolvedByUserId: updatedIssue.resolvedByUserId };
+    const afterState = {
+      status: updatedIssue.status,
+      resolvedAt: updatedIssue.resolvedAt,
+      resolvedByUserId: updatedIssue.resolvedByUserId,
+    };
 
     // Create activity timeline entry
     await db.issueActivity.create({

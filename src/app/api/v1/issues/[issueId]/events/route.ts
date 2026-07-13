@@ -81,10 +81,7 @@ export async function GET(
 
     const events = await db.event.findMany({
       where: { issueId },
-      orderBy: [
-        { serverReceivedAt: "desc" },
-        { id: "desc" },
-      ],
+      orderBy: [{ serverReceivedAt: "desc" }, { id: "desc" }],
       take: limit,
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : 0,

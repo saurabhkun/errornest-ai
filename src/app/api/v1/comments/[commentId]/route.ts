@@ -72,7 +72,9 @@ export async function PATCH(
     // Only the author can edit their comment
     if (comment.authorUserId !== user.id) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Only the author can edit this comment", requestId } },
+        {
+          error: { code: "FORBIDDEN", message: "Only the author can edit this comment", requestId },
+        },
         { status: 403, headers: responseHeaders }
       );
     }
@@ -243,7 +245,13 @@ export async function DELETE(
 
     if (!isAuthor && !isAdminOrOwner) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "You do not have permission to delete this comment", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "You do not have permission to delete this comment",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }

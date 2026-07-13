@@ -78,13 +78,7 @@ interface SavedFilter {
   sortDirection: "asc" | "desc";
 }
 
-export function IssuesClient({
-  org,
-  project,
-  members,
-  environments,
-  releases,
-}: IssuesClientProps) {
+export function IssuesClient({ org, project, members, environments, releases }: IssuesClientProps) {
   // Search & Filter state
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -357,7 +351,11 @@ export function IssuesClient({
                 ...iss,
                 assigneeUserId: userId,
                 assignee: matchedMember
-                  ? { id: userId!, displayName: matchedMember.displayName, email: matchedMember.email }
+                  ? {
+                      id: userId!,
+                      displayName: matchedMember.displayName,
+                      email: matchedMember.email,
+                    }
                   : null,
               }
             : iss
@@ -373,7 +371,8 @@ export function IssuesClient({
 
   const handleBulkDelete = async () => {
     if (selectedIssueIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete these ${selectedIssueIds.length} issues?`)) return;
+    if (!confirm(`Are you sure you want to delete these ${selectedIssueIds.length} issues?`))
+      return;
     setIsBulkActionRunning(true);
     try {
       const res = await fetch("/api/v1/issues/bulk", {
@@ -715,7 +714,9 @@ export function IssuesClient({
               </label>
               <select
                 value={sortField}
-                onChange={(e) => setSortField(e.target.value as "lastSeenAt" | "occurrenceCount" | "firstSeenAt")}
+                onChange={(e) =>
+                  setSortField(e.target.value as "lastSeenAt" | "occurrenceCount" | "firstSeenAt")
+                }
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors"
               >
                 <option value="lastSeenAt">Last Seen</option>
@@ -769,11 +770,21 @@ export function IssuesClient({
                 <AlertOctagon className="h-12 w-12 text-zinc-600 mx-auto" />
                 <h3 className="text-base font-bold text-white">No issues found</h3>
                 <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                  {debouncedSearch || status || level || envFilter || releaseFilter || assigneeFilter
+                  {debouncedSearch ||
+                  status ||
+                  level ||
+                  envFilter ||
+                  releaseFilter ||
+                  assigneeFilter
                     ? "No issues match the active filter criteria. Try adjusting filters or searching another keyword."
                     : "No exceptions captured yet for this project. Configure the SDK and throw an error to see it here!"}
                 </p>
-                {debouncedSearch || status || level || envFilter || releaseFilter || assigneeFilter ? (
+                {debouncedSearch ||
+                status ||
+                level ||
+                envFilter ||
+                releaseFilter ||
+                assigneeFilter ? (
                   <button
                     onClick={handleResetFilters}
                     className="px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white"
@@ -885,9 +896,7 @@ export function IssuesClient({
                         <td className="p-4">
                           <select
                             value={issue.assigneeUserId || ""}
-                            onChange={(e) =>
-                              handleAssigneeChange(issue.id, e.target.value || null)
-                            }
+                            onChange={(e) => handleAssigneeChange(issue.id, e.target.value || null)}
                             className="w-full bg-zinc-950 border border-zinc-850 rounded px-2 py-1 text-[11px] text-zinc-300 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
                           >
                             <option value="">Unassigned</option>

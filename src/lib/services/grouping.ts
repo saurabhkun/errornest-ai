@@ -8,14 +8,16 @@ export function normalizeString(str: string): string {
   if (!str) return "";
 
   // 1. Normalize timestamps
-  const isoTimestampRegex = /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b/g;
+  const isoTimestampRegex =
+    /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?\b/g;
   let normalized = str.replace(isoTimestampRegex, "{timestamp}");
-  
+
   const dateRegex = /\b\d{4}[-/]\d{2}[-/]\d{2}\b/g;
   normalized = normalized.replace(dateRegex, "{timestamp}");
 
   // 2. Normalize UUIDs
-  const uuidRegex = /\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/g;
+  const uuidRegex =
+    /\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/g;
   normalized = normalized.replace(uuidRegex, "{uuid}");
 
   // 3. Normalize hashes (64-char, 40-char, 32-char hex strings)
@@ -28,7 +30,8 @@ export function normalizeString(str: string): string {
     .replace(md5Regex, "{hash}");
 
   // 4. Normalize query strings in URLs
-  const queryStringRegex = /\?[a-zA-Z0-9_.~%-]+=[a-zA-Z0-9_.~%-]+(?:&[a-zA-Z0-9_.~%-]+=[a-zA-Z0-9_.~%-]+)*/g;
+  const queryStringRegex =
+    /\?[a-zA-Z0-9_.~%-]+=[a-zA-Z0-9_.~%-]+(?:&[a-zA-Z0-9_.~%-]+=[a-zA-Z0-9_.~%-]+)*/g;
   normalized = normalized.replace(queryStringRegex, "?{query}");
 
   // 5. Normalize IDs (5+ digit series)
@@ -88,12 +91,7 @@ export function generateFingerprint(
     return `${fn}:${file}`;
   });
 
-  const combined = [
-    projectId,
-    normType,
-    normMessage,
-    ...frameParts,
-  ].join("|");
+  const combined = [projectId, normType, normMessage, ...frameParts].join("|");
 
   return crypto.createHash("sha256").update(combined).digest("hex");
 }
@@ -102,7 +100,11 @@ export function generateFingerprint(
  * Core event grouping workflow. Finds or creates an issue, attaches the event,
  * updates counters, handles resolved regression reopening, and logs activity.
  */
-export async function groupEvent(eventId: string): Promise<void> {
+export async function groupEvent(eventId: string): Promise<{
+  issueId: string;
+  isNewIssue: boolean;
+  isRegression: boolean;
+}> {
   const event = await db.event.findUnique({
     where: { id: eventId },
   });
@@ -112,12 +114,7 @@ export async function groupEvent(eventId: string): Promise<void> {
   }
 
   const frames = (event.normalizedFrames as unknown as StackFrame[]) || [];
-  const fingerprint = generateFingerprint(
-    event.projectId,
-    event.errorType,
-    event.message,
-    frames
-  );
+  const fingerprint = generateFingerprint(event.projectId, event.errorType, event.message, frames);
 
   const normMessage = normalizeString(event.message);
 
@@ -132,12 +129,15 @@ export async function groupEvent(eventId: string): Promise<void> {
   });
 
   let issueId: string;
+  let isNewIssue = false;
+  let isRegression = false;
 
   if (existingIssue) {
     issueId = existingIssue.id;
 
     // Check if regression has occurred (reopening a resolved issue)
     const isResolved = existingIssue.status === "RESOLVED";
+    isRegression = isResolved;
     const newStatus = isResolved ? "REOPENED" : existingIssue.status;
 
     // Calculate affected user increment
@@ -202,6 +202,7 @@ export async function groupEvent(eventId: string): Promise<void> {
     });
 
     issueId = newIssue.id;
+    isNewIssue = true;
 
     // Create CREATED activity entry
     await db.issueActivity.create({
@@ -224,4 +225,6 @@ export async function groupEvent(eventId: string): Promise<void> {
       processingError: null,
     },
   });
+
+  return { issueId, isNewIssue, isRegression };
 }

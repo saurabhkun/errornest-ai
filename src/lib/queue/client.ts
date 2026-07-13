@@ -1,5 +1,6 @@
 import { db } from "@/lib/db/client";
 import { groupEvent } from "@/lib/services/grouping";
+import { RuleEvaluator } from "@/lib/services/alerts/RuleEvaluator";
 
 /**
  * Enqueues an event for background processing.
@@ -9,7 +10,11 @@ import { groupEvent } from "@/lib/services/grouping";
 export async function enqueueEventProcessing(eventId: string, retryCount = 0): Promise<void> {
   const processTask = async () => {
     try {
-      await groupEvent(eventId);
+      const result = await groupEvent(eventId);
+      await RuleEvaluator.evaluate(eventId, {
+        isNewIssue: result.isNewIssue,
+        isRegression: result.isRegression,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error(`Error processing event ${eventId} (attempt ${retryCount + 1}):`, error);

@@ -22,11 +22,7 @@ vi.mock("@/lib/db/client", () => {
 });
 
 import { db } from "@/lib/db/client";
-import {
-  normalizeString,
-  generateFingerprint,
-  groupEvent,
-} from "@/lib/services/grouping";
+import { normalizeString, generateFingerprint, groupEvent } from "@/lib/services/grouping";
 
 describe("Grouping Service Unit Tests", () => {
   beforeEach(() => {

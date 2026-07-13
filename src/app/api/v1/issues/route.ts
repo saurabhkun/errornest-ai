@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getSessionUser();
     const { searchParams } = new URL(request.url);
-    
+
     // Parse query params
     const queryObj: Record<string, unknown> = {};
     searchParams.forEach((value, key) => {
@@ -119,10 +119,7 @@ export async function GET(request: NextRequest) {
     if (environment) {
       where.events = {
         some: {
-          OR: [
-            { environmentId: environment },
-            { environment: { name: environment } },
-          ],
+          OR: [{ environmentId: environment }, { environment: { name: environment } }],
         },
       };
     }
@@ -132,10 +129,7 @@ export async function GET(request: NextRequest) {
         ...(where.events || {}),
         some: {
           ...(where.events?.some || {}),
-          OR: [
-            { releaseId: release },
-            { release: { version: release } },
-          ],
+          OR: [{ releaseId: release }, { release: { version: release } }],
         },
       };
     }
@@ -159,10 +153,7 @@ export async function GET(request: NextRequest) {
 
     const issues = await db.issue.findMany({
       where,
-      orderBy: [
-        { [sort]: direction },
-        { id: direction },
-      ],
+      orderBy: [{ [sort]: direction }, { id: direction }],
       take: limit,
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : 0,

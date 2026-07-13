@@ -75,14 +75,26 @@ export async function PATCH(request: NextRequest) {
 
       if (!membership) {
         return NextResponse.json(
-          { error: { code: "FORBIDDEN", message: "Access denied to one or more organizations", requestId } },
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Access denied to one or more organizations",
+              requestId,
+            },
+          },
           { status: 403, headers: responseHeaders }
         );
       }
 
       if (membership.role === "VIEWER") {
         return NextResponse.json(
-          { error: { code: "FORBIDDEN", message: "Viewers cannot perform bulk triage actions", requestId } },
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Viewers cannot perform bulk triage actions",
+              requestId,
+            },
+          },
           { status: 403, headers: responseHeaders }
         );
       }
@@ -114,14 +126,18 @@ export async function PATCH(request: NextRequest) {
       await tx.issue.updateMany({
         where: { id: { in: issueIds }, deletedAt: null },
         data: {
-          ...(status !== undefined ? {
-            status,
-            resolvedAt: status === "RESOLVED" ? new Date() : null,
-            resolvedByUserId: status === "RESOLVED" ? user.id : null,
-          } : {}),
-          ...(assigneeUserId !== undefined ? {
-            assigneeUserId,
-          } : {}),
+          ...(status !== undefined
+            ? {
+                status,
+                resolvedAt: status === "RESOLVED" ? new Date() : null,
+                resolvedByUserId: status === "RESOLVED" ? user.id : null,
+              }
+            : {}),
+          ...(assigneeUserId !== undefined
+            ? {
+                assigneeUserId,
+              }
+            : {}),
         },
       });
 
@@ -175,7 +191,10 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ data: { success: true, count: issues.length } }, { headers: responseHeaders });
+    return NextResponse.json(
+      { data: { success: true, count: issues.length } },
+      { headers: responseHeaders }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
@@ -244,7 +263,13 @@ export async function DELETE(request: NextRequest) {
 
       if (!membership) {
         return NextResponse.json(
-          { error: { code: "FORBIDDEN", message: "Access denied to one or more organizations", requestId } },
+          {
+            error: {
+              code: "FORBIDDEN",
+              message: "Access denied to one or more organizations",
+              requestId,
+            },
+          },
           { status: 403, headers: responseHeaders }
         );
       }
@@ -297,7 +322,10 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ data: { success: true, count: issues.length } }, { headers: responseHeaders });
+    return NextResponse.json(
+      { data: { success: true, count: issues.length } },
+      { headers: responseHeaders }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

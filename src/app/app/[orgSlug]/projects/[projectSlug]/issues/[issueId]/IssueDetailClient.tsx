@@ -18,6 +18,8 @@ import {
   Terminal,
   ChevronDown,
   ChevronUp,
+  /* fallback icon for device/request context */
+  Cpu,
   Copy,
   Edit2,
   Trash2,
@@ -369,7 +371,10 @@ export function IssueDetailClient({
       stackText = activeEvent.rawStackTrace;
     } else {
       stackText = activeEvent.normalizedFrames
-        .map((f) => `  at ${f.functionName || "anonymous"} (${f.fileName || "unknown"}:${f.lineNumber || "?"}:${f.columnNumber || "?"})`)
+        .map(
+          (f) =>
+            `  at ${f.functionName || "anonymous"} (${f.fileName || "unknown"}:${f.lineNumber || "?"}:${f.columnNumber || "?"})`
+        )
         .join("\n");
     }
 
@@ -384,13 +389,22 @@ export function IssueDetailClient({
     const payload = activeEvent.rawPayload;
 
     // Search common tags/contexts inside raw payload
-    const browser = (payload.browser as string) || (payload.tags as Record<string, string>)?.browser || "Unknown Browser";
-    const os = (payload.os as string) || (payload.tags as Record<string, string>)?.os || "Unknown OS";
-    const url = (payload.url as string) || (payload.tags as Record<string, string>)?.url || "Unknown URL";
-    const method = (payload.method as string) || (payload.tags as Record<string, string>)?.method || "N/A";
+    const browser =
+      (payload.browser as string) ||
+      (payload.tags as Record<string, string>)?.browser ||
+      "Unknown Browser";
+    const os =
+      (payload.os as string) || (payload.tags as Record<string, string>)?.os || "Unknown OS";
+    const url =
+      (payload.url as string) || (payload.tags as Record<string, string>)?.url || "Unknown URL";
+    const method =
+      (payload.method as string) || (payload.tags as Record<string, string>)?.method || "N/A";
     const ipAddress = (payload.ipAddress as string) || "Unknown IP";
     const userAgent = (payload.userAgent as string) || "Unknown User Agent";
-    const sdkVersion = (payload.sdkVersion as string) || (payload.tags as Record<string, string>)?.sdkVersion || "Unknown SDK";
+    const sdkVersion =
+      (payload.sdkVersion as string) ||
+      (payload.tags as Record<string, string>)?.sdkVersion ||
+      "Unknown SDK";
     const environment = activeEvent.environment.name;
     const release = activeEvent.release?.version || "No release tag";
 
@@ -404,7 +418,11 @@ export function IssueDetailClient({
     return [
       { line: line - 2, code: `// helper definition inside ${cleanFile}`, isError: false },
       { line: line - 1, code: `function validateAndExecute(payload) {`, isError: false },
-      { line: line, code: `  const response = ${func}(payload); // Error triggered here`, isError: true },
+      {
+        line: line,
+        code: `  const response = ${func}(payload); // Error triggered here`,
+        isError: true,
+      },
       { line: line + 1, code: `  return serializeResponse(response);`, isError: false },
       { line: line + 2, code: `}`, isError: false },
     ];
@@ -425,19 +443,22 @@ export function IssueDetailClient({
 
   // Custom Markdown Parser
   const parseMarkdown = (text: string) => {
-    let html = text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     // **bold**
     html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     // *italic*
     html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
     // `code`
-    html = html.replace(/`(.*?)`/g, '<code class="bg-zinc-950 px-1 py-0.5 rounded font-mono text-[11px] text-emerald-300 border border-zinc-800">$1</code>');
+    html = html.replace(
+      /`(.*?)`/g,
+      '<code class="bg-zinc-950 px-1 py-0.5 rounded font-mono text-[11px] text-emerald-300 border border-zinc-800">$1</code>'
+    );
     // Links: [text](url)
-    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>');
+    html = html.replace(
+      /\[(.*?)\]\((.*?)\)/g,
+      '<a href="$2" class="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
 
     // Mentions highlighting: @DisplayName
     members.forEach((m) => {
@@ -734,13 +755,18 @@ export function IssueDetailClient({
                       className="text-[10px] px-2.5 py-1 rounded bg-zinc-800 text-zinc-200 hover:text-white font-bold flex items-center gap-1 transition-all"
                       title="Copy Stack Trace"
                     >
-                      {copiedStack ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                      {copiedStack ? (
+                        <Check className="h-3 w-3 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
                       {copiedStack ? "Copied!" : "Copy"}
                     </button>
                   </div>
                 </div>
 
-                {!activeEvent || (!activeEvent.rawStackTrace && activeEvent.normalizedFrames.length === 0) ? (
+                {!activeEvent ||
+                (!activeEvent.rawStackTrace && activeEvent.normalizedFrames.length === 0) ? (
                   <div className="p-8 text-center text-zinc-500 text-xs italic">
                     No stack trace frames captured for this event.
                   </div>
@@ -764,12 +790,14 @@ export function IssueDetailClient({
                           // Find consecutive non-app frames
                           let count = 0;
                           const startIdx = index;
-                          while (index < frames.length && !isFrameInApp(frames[index].fileName || "")) {
+                          while (
+                            index < frames.length &&
+                            !isFrameInApp(frames[index].fileName || "")
+                          ) {
                             count++;
                             index++;
                           }
 
-                          const localIndex = startIdx;
                           items.push(
                             <div
                               key={`collapse-${startIdx}`}
@@ -793,12 +821,16 @@ export function IssueDetailClient({
                               }`}
                             >
                               <div
-                                onClick={() => isApp && setExpandedFrameIndex(isExpanded ? null : currentIdx)}
+                                onClick={() =>
+                                  isApp && setExpandedFrameIndex(isExpanded ? null : currentIdx)
+                                }
                                 className={`flex items-start justify-between gap-4 p-3 ${isApp ? "cursor-pointer" : ""}`}
                               >
                                 <div className="flex flex-col gap-1 min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className={`font-bold ${isApp ? "text-emerald-400" : "text-zinc-400"}`}>
+                                    <span
+                                      className={`font-bold ${isApp ? "text-emerald-400" : "text-zinc-400"}`}
+                                    >
                                       {frame.functionName || "anonymous"}
                                     </span>
                                     {isApp && (
@@ -823,10 +855,15 @@ export function IssueDetailClient({
                               {isApp && isExpanded && frame.lineNumber && (
                                 <div className="border-t border-zinc-900 bg-zinc-950/90 p-4">
                                   <div className="text-[10px] text-zinc-500 mb-2 flex items-center gap-1 uppercase tracking-wider font-bold">
-                                    <CornerDownRight className="h-3 w-3 text-emerald-500" /> Source Code Context Preview
+                                    <CornerDownRight className="h-3 w-3 text-emerald-500" /> Source
+                                    Code Context Preview
                                   </div>
                                   <div className="space-y-1 font-mono text-[11px] leading-relaxed">
-                                    {getMockSourceCode(frame.functionName || "", frame.lineNumber, frame.fileName || "").map((cLine, cIdx) => (
+                                    {getMockSourceCode(
+                                      frame.functionName || "",
+                                      frame.lineNumber,
+                                      frame.fileName || ""
+                                    ).map((cLine, cIdx) => (
                                       <div
                                         key={cIdx}
                                         className={`flex gap-3 px-2 py-0.5 rounded ${
@@ -835,8 +872,12 @@ export function IssueDetailClient({
                                             : "text-zinc-400"
                                         }`}
                                       >
-                                        <span className="text-zinc-600 text-right w-8 select-none">{cLine.line}</span>
-                                        <span className="whitespace-pre truncate">{cLine.code}</span>
+                                        <span className="text-zinc-600 text-right w-8 select-none">
+                                          {cLine.line}
+                                        </span>
+                                        <span className="whitespace-pre truncate">
+                                          {cLine.code}
+                                        </span>
                                       </div>
                                     ))}
                                   </div>
@@ -870,7 +911,9 @@ export function IssueDetailClient({
                       setActiveTab("overview");
                     }}
                     className={`p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs cursor-pointer hover:bg-zinc-950/30 transition-colors ${
-                      idx === activeEventIndex ? "bg-emerald-500/5 border-l-2 border-emerald-500" : ""
+                      idx === activeEventIndex
+                        ? "bg-emerald-500/5 border-l-2 border-emerald-500"
+                        : ""
                     }`}
                   >
                     <div className="space-y-1">
@@ -967,39 +1010,59 @@ export function IssueDetailClient({
               {contexts && (
                 <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl p-5 space-y-4">
                   <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2 flex items-center gap-2">
-                    <Monitor className="h-4 w-4 text-emerald-500" /> Device & Request Context
+                    <Cpu className="h-4 w-4 text-emerald-500" /> Device & Request Context
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs font-mono">
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">OS</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        OS
+                      </span>
                       <span className="text-zinc-200 font-semibold">{contexts.os}</span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Browser</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        Browser
+                      </span>
                       <span className="text-zinc-200 font-semibold">{contexts.browser}</span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">SDK Version</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        SDK Version
+                      </span>
                       <span className="text-zinc-200 font-semibold">{contexts.sdkVersion}</span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">IP Address</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        IP Address
+                      </span>
                       <span className="text-zinc-200 font-semibold">{contexts.ipAddress}</span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Method</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        Method
+                      </span>
                       <span className="text-emerald-400 font-bold">{contexts.method}</span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Release</span>
-                      <span className="text-zinc-200 font-semibold truncate block">{contexts.release}</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        Release
+                      </span>
+                      <span className="text-zinc-200 font-semibold truncate block">
+                        {contexts.release}
+                      </span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70 sm:col-span-2 md:col-span-3">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">Request URL</span>
-                      <span className="text-emerald-400 font-semibold break-all">{contexts.url}</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        Request URL
+                      </span>
+                      <span className="text-emerald-400 font-semibold break-all">
+                        {contexts.url}
+                      </span>
                     </div>
                     <div className="p-3 bg-zinc-950 rounded-lg border border-zinc-900/70 sm:col-span-2 md:col-span-3">
-                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">User Agent</span>
+                      <span className="block text-zinc-500 font-bold text-[9px] uppercase mb-1">
+                        User Agent
+                      </span>
                       <span className="text-zinc-400 font-semibold break-all text-[11px] leading-relaxed">
                         {contexts.userAgent}
                       </span>
@@ -1017,13 +1080,19 @@ export function IssueDetailClient({
                   <span className="flex items-center gap-2">
                     <Code className="h-4 w-4 text-emerald-500" /> Raw JSON Payload
                   </span>
-                  {rawJsonExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {rawJsonExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </button>
                 {rawJsonExpanded && activeEvent && (
                   <div className="relative group">
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(activeEvent.rawPayload, null, 2));
+                        navigator.clipboard.writeText(
+                          JSON.stringify(activeEvent.rawPayload, null, 2)
+                        );
                         alert("JSON Payload copied!");
                       }}
                       className="absolute right-3 top-3 px-2 py-1 bg-zinc-900 hover:bg-zinc-800 text-[10px] text-zinc-300 rounded border border-zinc-800 font-bold transition-all opacity-0 group-hover:opacity-100"
@@ -1128,14 +1197,19 @@ export function IssueDetailClient({
                   const isAuthor = comment.authorUserId === currentUser.id;
 
                   return (
-                    <div key={comment.id} className="space-y-1 text-xs border-b border-zinc-850/40 pb-2.5 last:border-0 last:pb-0">
+                    <div
+                      key={comment.id}
+                      className="space-y-1 text-xs border-b border-zinc-850/40 pb-2.5 last:border-0 last:pb-0"
+                    >
                       <div className="flex items-center justify-between text-[10px] text-zinc-500">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-zinc-300">
                             {comment.author.displayName}
                           </span>
                           {comment.author.id === currentUser.id && (
-                            <span className="bg-zinc-800 text-zinc-400 px-1 rounded text-[8px] uppercase font-bold">You</span>
+                            <span className="bg-zinc-800 text-zinc-400 px-1 rounded text-[8px] uppercase font-bold">
+                              You
+                            </span>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
