@@ -32,7 +32,7 @@ export function Sidebar({ org }: SidebarProps) {
       name: "Dashboard",
       href: `/app/${org.slug}/dashboard`,
       icon: LayoutDashboard,
-      disabled: true,
+      disabled: false,
     },
     {
       name: "Projects",

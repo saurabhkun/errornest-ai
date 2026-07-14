@@ -227,16 +227,17 @@ AI operations:
 
 ## 13. Analytics
 
-- `GET /projects/:projectId/analytics/volume`
-- `GET /projects/:projectId/analytics/top-issues`
-- `GET /projects/:projectId/analytics/breakdown`
-- `GET /organizations/:orgId/analytics/resolution`
+All analytics endpoints require `projectId` (UUID) as a query parameter. Optional query parameters include:
+- `environmentId`: Filter by a specific environment.
+- `period`: Filter by standard time windows (`24h`, `7d`, `30d`).
+- `from` and `to`: Provide explicit RFC 3339 datetime bounds for precise queries.
 
-Required query:
-
-- from,
-- to,
-- interval/groupBy where applicable.
+Endpoints:
+- `GET /api/v1/analytics/overview` - Returns high-level KPI cards (Total Events, Total Issues, Error Rate, Affected Users, New Issues Today, Regressions).
+- `GET /api/v1/analytics/trends` - Returns high-performance pre-aggregated hourly rollup timeseries data (eventCount, newIssueCount, affectedUserCount).
+- `GET /api/v1/analytics/releases` - Returns release health data (eventCount, newIssueCount, affectedUserCount, regressions, errorRate) for the project.
+- `GET /api/v1/analytics/issues` - Returns the top frequency issues in the selected period.
+- `GET /api/v1/analytics/environments` - Returns breakdown metrics for environments, browsers, operating systems, devices, and top affected users.
 
 ## 14. Settings and Audit
 

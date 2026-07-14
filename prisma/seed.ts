@@ -12,7 +12,11 @@ import {
   Event,
 } from "@prisma/client";
 
-const prisma = new PrismaClient();
+import { PrismaNeon } from "@prisma/adapter-neon";
+
+const databaseUrl = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/errornest?sslmode=disable";
+const adapter = new PrismaNeon({ connectionString: databaseUrl });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Starting database seeding...");
@@ -346,6 +350,7 @@ async function main() {
         tags: JSON.stringify({
           browser: j % 2 === 0 ? "Chrome" : "Firefox",
           os: j % 2 === 0 ? "Windows" : "MacOS",
+          device: j % 3 === 0 ? "Desktop" : (j % 3 === 1 ? "Mobile" : "Tablet"),
         }),
         rawPayload: JSON.stringify({
           originalError: issue.title,
@@ -362,6 +367,68 @@ async function main() {
   }
 
   await Promise.all(eventPromises);
+
+  // 10b. Aggregate seed events into AnalyticsHourly
+  console.log("🌱 Aggregating seed events into AnalyticsHourly...");
+  const seededEvents = await prisma.event.findMany({});
+  const rollupsMap = new Map<string, {
+    projectId: string;
+    environmentId: string;
+    releaseId: string | null;
+    bucketStart: Date;
+    eventCount: number;
+    newIssueCount: number;
+    reopenedIssueCount: number;
+    affectedUsers: Set<string>;
+  }>();
+
+  for (const ev of seededEvents) {
+    const bucketStart = new Date(ev.createdAt || ev.serverReceivedAt);
+    bucketStart.setUTCMinutes(0, 0, 0);
+    bucketStart.setUTCMilliseconds(0);
+
+    const key = `${ev.projectId}_${ev.environmentId}_${ev.releaseId || "null"}_${bucketStart.getTime()}`;
+
+    if (!rollupsMap.has(key)) {
+      rollupsMap.set(key, {
+        projectId: ev.projectId,
+        environmentId: ev.environmentId,
+        releaseId: ev.releaseId,
+        bucketStart,
+        eventCount: 0,
+        newIssueCount: 0,
+        reopenedIssueCount: 0,
+        affectedUsers: new Set<string>(),
+      });
+    }
+
+    const rollup = rollupsMap.get(key)!;
+    rollup.eventCount += 1;
+
+    // Simulate some new and reopened issues
+    if (Math.random() < 0.1) rollup.newIssueCount += 1;
+    if (Math.random() < 0.05) rollup.reopenedIssueCount += 1;
+
+    if (ev.userExternalId) {
+      rollup.affectedUsers.add(ev.userExternalId);
+    }
+  }
+
+  for (const rollup of rollupsMap.values()) {
+    await prisma.analyticsHourly.create({
+      data: {
+        projectId: rollup.projectId,
+        environmentId: rollup.environmentId,
+        releaseId: rollup.releaseId,
+        bucketStart: rollup.bucketStart,
+        eventCount: rollup.eventCount,
+        newIssueCount: rollup.newIssueCount,
+        reopenedIssueCount: rollup.reopenedIssueCount,
+        affectedUserCount: rollup.affectedUsers.size,
+      },
+    });
+  }
+
 
   // Update Occurrence counts and affected user counts in issues
   console.log("📈 Updating issue summary metrics...");

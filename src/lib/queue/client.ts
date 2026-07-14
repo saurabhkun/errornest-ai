@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/client";
 import { groupEvent } from "@/lib/services/grouping";
 import { RuleEvaluator } from "@/lib/services/alerts/RuleEvaluator";
+import { RollupManager } from "@/lib/services/analytics/RollupManager";
 
 /**
  * Enqueues an event for background processing.
@@ -12,6 +13,10 @@ export async function enqueueEventProcessing(eventId: string, retryCount = 0): P
     try {
       const result = await groupEvent(eventId);
       await RuleEvaluator.evaluate(eventId, {
+        isNewIssue: result.isNewIssue,
+        isRegression: result.isRegression,
+      });
+      await RollupManager.recordEvent(eventId, {
         isNewIssue: result.isNewIssue,
         isRegression: result.isRegression,
       });
