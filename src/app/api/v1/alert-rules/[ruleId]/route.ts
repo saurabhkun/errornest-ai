@@ -3,6 +3,7 @@ import { db } from "@/lib/db/client";
 import { getSessionUser } from "@/lib/auth/session";
 import { z } from "zod";
 import { AlertType, EventLevel } from "@prisma/client";
+import { createAuditLog } from "@/lib/utils/audit";
 
 const alertRuleSchema = z
   .object({
@@ -121,6 +122,18 @@ export async function PATCH(
       },
     });
 
+    await createAuditLog({
+      organizationId: existingRule.project.organizationId,
+      actorUserId: user.id,
+      actorName: user.displayName,
+      actorEmail: user.email,
+      actionType: "ALERT_RULE_UPDATE",
+      targetType: "AlertRule",
+      targetId: ruleId,
+      beforeState: existingRule as unknown as Record<string, unknown>,
+      afterState: updatedRule as unknown as Record<string, unknown>,
+    });
+
     return NextResponse.json({ data: updatedRule });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -170,6 +183,17 @@ export async function DELETE(
 
     await db.alertRule.delete({
       where: { id: ruleId },
+    });
+
+    await createAuditLog({
+      organizationId: rule.project.organizationId,
+      actorUserId: user.id,
+      actorName: user.displayName,
+      actorEmail: user.email,
+      actionType: "ALERT_RULE_DELETE",
+      targetType: "AlertRule",
+      targetId: ruleId,
+      beforeState: rule as unknown as Record<string, unknown>,
     });
 
     return NextResponse.json({ data: { success: true } });

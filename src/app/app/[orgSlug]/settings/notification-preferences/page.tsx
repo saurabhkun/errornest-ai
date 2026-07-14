@@ -41,6 +41,6 @@ export default async function NotificationPreferencesPage({
   });
 
   return (
-    <NotificationPreferencesClient orgSlug={org.slug} initialPreferences={initialPreferences} />
+    <NotificationPreferencesClient initialPreferences={initialPreferences} />
   );
 }

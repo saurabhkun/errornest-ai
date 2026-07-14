@@ -62,7 +62,7 @@ export function Sidebar({ org }: SidebarProps) {
       name: "Settings",
       href: `/app/${org.slug}/settings/audit`,
       icon: Settings2,
-      disabled: true,
+      disabled: false,
     },
   ];
 

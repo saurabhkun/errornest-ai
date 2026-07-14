@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import { ChevronRight, Bell, Mail, Loader2, Check } from "lucide-react";
+import { Bell, Mail, Loader2, Check } from "lucide-react";
 import { NotificationType } from "@prisma/client";
 
 interface Preference {
@@ -12,7 +11,6 @@ interface Preference {
 }
 
 interface NotificationPreferencesClientProps {
-  orgSlug: string;
   initialPreferences: Preference[];
 }
 
@@ -37,7 +35,6 @@ const TYPE_DETAILS: Record<NotificationType, { title: string; description: strin
 };
 
 export function NotificationPreferencesClient({
-  orgSlug,
   initialPreferences,
 }: NotificationPreferencesClientProps) {
   const [preferences, setPreferences] = useState<Preference[]>(initialPreferences);
@@ -90,21 +87,12 @@ export function NotificationPreferencesClient({
   };
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-2 text-xs text-zinc-400">
-        <Link href={`/app/${orgSlug}/projects`} className="hover:text-zinc-200 transition-colors">
-          Home
-        </Link>
-        <ChevronRight className="h-3 w-3 text-zinc-600" />
-        <span className="text-zinc-200 font-medium">Notification Settings</span>
-      </div>
-
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Notification Preferences</h1>
-          <p className="text-sm text-zinc-450 mt-1">
+          <h2 className="text-xl font-bold text-white">Notification Preferences</h2>
+          <p className="text-zinc-400 text-sm mt-1">
             Choose how and when you want to receive alerts from ErrorNest.
           </p>
         </div>

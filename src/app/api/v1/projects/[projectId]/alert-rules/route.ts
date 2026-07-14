@@ -3,6 +3,7 @@ import { db } from "@/lib/db/client";
 import { getSessionUser } from "@/lib/auth/session";
 import { z } from "zod";
 import { AlertType, EventLevel } from "@prisma/client";
+import { createAuditLog } from "@/lib/utils/audit";
 
 const alertRuleSchema = z
   .object({
@@ -149,6 +150,17 @@ export async function POST(
       include: {
         environment: { select: { id: true, name: true } },
       },
+    });
+
+    await createAuditLog({
+      organizationId: project.organizationId,
+      actorUserId: user.id,
+      actorName: user.displayName,
+      actorEmail: user.email,
+      actionType: "ALERT_RULE_CREATE",
+      targetType: "AlertRule",
+      targetId: newRule.id,
+      afterState: newRule as unknown as Record<string, unknown>,
     });
 
     return NextResponse.json({ data: newRule }, { status: 201 });
