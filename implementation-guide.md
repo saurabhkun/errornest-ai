@@ -98,8 +98,7 @@
 - provider adapter
 - explanation
 - fix suggestion
-- cache and feedback
-- rate limits
+- cache and feedback limits
 - graceful provider failure
 
 ### M9 — Team, Settings, Audit
@@ -129,7 +128,8 @@ Read every Markdown file in the repository root and docs directory. Treat them a
 
 Do not write feature code yet.
 
-Create a concise implementation checklist for Milestone M0 only. List:
+Create a concise
+- rateimplementation checklist for Milestone M0 only. List:
 - files to create or change,
 - dependencies,
 - commands,

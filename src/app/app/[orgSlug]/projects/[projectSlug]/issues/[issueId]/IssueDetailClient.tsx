@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { AiPanel } from "@/components/ai/AiPanel";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -1109,8 +1110,15 @@ export function IssueDetailClient({
           )}
         </div>
 
-        {/* Right Column: Triage Actions, Comments, Activity */}
+        {/* Right Column: AI Assistant, Triage Actions, Comments, Activity */}
         <div className="lg:col-span-1 space-y-6">
+          {/* AI Assistant Panel */}
+          <div className="border border-zinc-850 bg-zinc-900/35 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2 flex items-center gap-2">
+              <span className="text-purple-400">✦</span> AI Assistant
+            </h3>
+            <AiPanel issueId={issueId} />
+          </div>
           {/* Triage Actions Box */}
           <div className="border border-zinc-850 bg-zinc-900/35 rounded-xl p-5 space-y-4">
             <h3 className="text-sm font-bold text-white border-b border-zinc-850 pb-2">
