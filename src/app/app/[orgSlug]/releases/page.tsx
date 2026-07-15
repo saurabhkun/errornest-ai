@@ -2,9 +2,9 @@ import React from "react";
 import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { redirect } from "next/navigation";
-import { DashboardClient } from "./DashboardClient";
+import { ReleasesClient } from "./ReleasesClient";
 
-export default async function DashboardPage({ params }: { params: Promise<{ orgSlug: string }> }) {
+export default async function ReleasesPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const user = await getSessionUser();
   if (!user) {
@@ -29,25 +29,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ orgS
     orderBy: {
       name: "asc",
     },
-    include: {
-      environments: {
-        where: { isHidden: false },
-      },
-    },
   });
 
   const serializedProjects = projects.map((p) => ({
     id: p.id,
     name: p.name,
     slug: p.slug,
-    environments: p.environments.map((e) => ({
-      id: e.id,
-      name: e.name,
-    })),
   }));
 
   return (
-    <DashboardClient
+    <ReleasesClient
       org={{ id: org.id, name: org.name, slug: org.slug }}
       projects={serializedProjects}
     />

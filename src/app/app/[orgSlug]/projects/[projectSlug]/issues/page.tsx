@@ -60,7 +60,7 @@ export default async function IssuesPage({
 
   // Fetch unique environments for the project
   const environments = await db.environment.findMany({
-    where: { projectId: project.id },
+    where: { projectId: project.id, isHidden: false },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });

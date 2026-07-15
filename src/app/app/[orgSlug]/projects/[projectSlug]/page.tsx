@@ -42,6 +42,11 @@ export default async function ProjectDetailPage({
     orderBy: { createdAt: "desc" },
   });
 
+  const environments = await db.environment.findMany({
+    where: { projectId: project.id },
+    orderBy: { name: "asc" },
+  });
+
   const serializedProject = {
     id: project.id,
     name: project.name,
@@ -59,11 +64,19 @@ export default async function ProjectDetailPage({
     lastUsedAt: k.lastUsedAt ? k.lastUsedAt.toISOString() : null,
   }));
 
+  const serializedEnvironments = environments.map((e) => ({
+    id: e.id,
+    name: e.name,
+    isHidden: e.isHidden,
+    createdAt: e.createdAt.toISOString(),
+  }));
+
   return (
     <ProjectDetailClient
       org={{ id: org.id, slug: org.slug }}
       project={serializedProject}
       initialKeys={serializedKeys}
+      initialEnvironments={serializedEnvironments}
     />
   );
 }

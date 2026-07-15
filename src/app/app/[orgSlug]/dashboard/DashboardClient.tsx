@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   Activity,
   AlertOctagon,
@@ -667,7 +668,12 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                       {releases.map((rel) => (
                         <tr key={rel.id} className="hover:bg-zinc-800/20 transition-colors">
                           <td className="py-3">
-                            <div className="font-semibold text-zinc-300">{rel.version}</div>
+                            <Link
+                              href={`/app/${org.slug}/releases`}
+                              className="font-semibold text-emerald-450 hover:text-emerald-300 transition-colors"
+                            >
+                              {rel.version}
+                            </Link>
                             <div className="text-[10px] text-zinc-500 mt-1 flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
                               {new Date(rel.deployedAt).toLocaleDateString([], {

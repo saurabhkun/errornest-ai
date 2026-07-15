@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   X,
   Plus,
+  Compass,
 } from "lucide-react";
 
 interface SerializedKey {
@@ -25,6 +26,13 @@ interface SerializedKey {
   keySuffix: string;
   createdAt: string;
   lastUsedAt: string | null;
+}
+
+interface SerializedEnvironment {
+  id: string;
+  name: string;
+  isHidden: boolean;
+  createdAt: string;
 }
 
 interface ProjectDetailClientProps {
@@ -40,11 +48,19 @@ interface ProjectDetailClientProps {
     createdAt: string;
   };
   initialKeys: SerializedKey[];
+  initialEnvironments: SerializedEnvironment[];
 }
 
-export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetailClientProps) {
+export function ProjectDetailClient({
+  org,
+  project,
+  initialKeys,
+  initialEnvironments,
+}: ProjectDetailClientProps) {
   const router = useRouter();
   const [keys, setKeys] = useState<SerializedKey[]>(initialKeys);
+  const [environments, setEnvironments] = useState<SerializedEnvironment[]>(initialEnvironments);
+  const [activeTab, setActiveTab] = useState<"keys" | "environments">("keys");
 
   // States for key creation
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -279,6 +295,51 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
     }
   };
 
+  const handleToggleEnvironmentVisibility = async (envId: string, currentHidden: boolean) => {
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/environments/${envId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isHidden: !currentHidden }),
+      });
+
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.error?.message || "Failed to update environment");
+      }
+
+      setEnvironments(
+        environments.map((e) => (e.id === envId ? { ...e, isHidden: body.data.isHidden } : e))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+    }
+  };
+
+  const handleDeleteEnvironment = async (envId: string) => {
+    setError("");
+    if (!confirm("Are you sure you want to permanently delete this environment?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/v1/environments/${envId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error?.message || "Failed to delete environment");
+      }
+
+      setEnvironments(environments.filter((e) => e.id !== envId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Breadcrumb Navigation */}
@@ -346,8 +407,25 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
       {/* Secondary Settings Tabs */}
       <div className="border-b border-zinc-800">
         <div className="flex gap-6">
-          <button className="border-b-2 border-emerald-500 pb-3 text-sm font-semibold text-white">
+          <button
+            onClick={() => setActiveTab("keys")}
+            className={`pb-3 text-sm font-semibold transition-colors cursor-pointer ${
+              activeTab === "keys"
+                ? "border-b-2 border-emerald-500 text-white"
+                : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
             API Keys
+          </button>
+          <button
+            onClick={() => setActiveTab("environments")}
+            className={`pb-3 text-sm font-semibold transition-colors cursor-pointer ${
+              activeTab === "environments"
+                ? "border-b-2 border-emerald-500 text-white"
+                : "text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            Environments
           </button>
           <Link
             href={`/app/${org.slug}/projects/${project.slug}/issues`}
@@ -367,105 +445,178 @@ export function ProjectDetailClient({ org, project, initialKeys }: ProjectDetail
         </div>
       </div>
 
-      {/* Keys Management Card */}
-      <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-white">Project API Keys</h2>
+      {activeTab === "keys" ? (
+        <>
+          {/* Keys Management Card */}
+          <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl overflow-hidden animate-in fade-in duration-200">
+            <div className="p-6 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-white">Project API Keys</h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Use these keys to authenticate events sent to ErrorNest from the SDK.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setCreatedRawKey(null);
+                  setIsCreateModalOpen(true);
+                }}
+                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Generate Key</span>
+              </button>
+            </div>
+
+            {keys.length === 0 ? (
+              <div className="p-12 text-center flex flex-col items-center justify-center">
+                <Key className="h-10 w-10 text-zinc-500 mb-4" />
+                <h3 className="text-sm font-semibold text-white">No active API keys</h3>
+                <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+                  Generate an API key to allow the ErrorNest SDK to send error payloads from your code.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs text-zinc-300">
+                  <thead>
+                    <tr className="border-b border-zinc-800/80 bg-zinc-900/20 text-zinc-400 font-medium">
+                      <th className="p-4">Name</th>
+                      <th className="p-4">Token Preview</th>
+                      <th className="p-4">Created At</th>
+                      <th className="p-4">Last Used</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {keys.map((k) => (
+                      <tr key={k.id} className="hover:bg-zinc-900/20">
+                        <td className="p-4 font-semibold text-white">{k.name}</td>
+                        <td className="p-4">
+                          <code className="bg-zinc-950 px-2 py-1 rounded text-zinc-400 font-mono">
+                            {k.keyPrefix}••••••••••••{k.keySuffix}
+                          </code>
+                        </td>
+                        <td className="p-4 text-zinc-400">
+                          {new Date(k.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-4 text-zinc-400">
+                          {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : "Never"}
+                        </td>
+                        <td className="p-4 text-right space-x-2">
+                          <button
+                            onClick={() => {
+                              setCreatedRawKey(null);
+                              setRotatingKey(k);
+                            }}
+                            className="p-1.5 rounded border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white cursor-pointer transition-colors"
+                            title="Rotate key"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setRevokingKey(k)}
+                            className="p-1.5 rounded border border-red-950 hover:border-red-900 bg-red-950/20 text-red-400 hover:text-red-300 cursor-pointer transition-colors"
+                            title="Revoke key"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Dangerous Actions Area */}
+          <div className="border border-red-900/40 bg-red-950/5 rounded-xl p-6 space-y-4">
+            <div>
+              <h2 className="text-base font-bold text-red-400">Destructive Actions</h2>
+              <p className="text-xs text-zinc-400 mt-1">
+                Permanently delete this project. All associated issues, events, API keys, and
+                configurations will be immediately soft-deleted.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsDeletingProject(true)}
+              className="bg-red-950/60 border border-red-800/80 hover:bg-red-900/80 text-red-200 text-xs font-semibold px-4.5 py-2 rounded-lg cursor-pointer transition-colors"
+            >
+              Delete Project
+            </button>
+          </div>
+        </>
+      ) : (
+        /* Environments Management Card */
+        <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl overflow-hidden animate-in fade-in duration-200">
+          <div className="p-6 border-b border-zinc-800">
+            <h2 className="text-lg font-bold text-white">Project Environments</h2>
             <p className="text-xs text-zinc-400 mt-1">
-              Use these keys to authenticate events sent to ErrorNest from the SDK.
+              Configure environment display settings and visibility. Hiding an environment will exclude it from dashboard summaries.
             </p>
           </div>
-          <button
-            onClick={() => {
-              setCreatedRawKey(null);
-              setIsCreateModalOpen(true);
-            }}
-            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Generate Key</span>
-          </button>
-        </div>
 
-        {keys.length === 0 ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center">
-            <Key className="h-10 w-10 text-zinc-500 mb-4" />
-            <h3 className="text-sm font-semibold text-white">No active API keys</h3>
-            <p className="text-xs text-zinc-500 mt-1 max-w-xs">
-              Generate an API key to allow the ErrorNest SDK to send error payloads from your code.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs text-zinc-300">
-              <thead>
-                <tr className="border-b border-zinc-800/80 bg-zinc-900/20 text-zinc-400 font-medium">
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Token Preview</th>
-                  <th className="p-4">Created At</th>
-                  <th className="p-4">Last Used</th>
-                  <th className="p-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800/60">
-                {keys.map((k) => (
-                  <tr key={k.id} className="hover:bg-zinc-900/20">
-                    <td className="p-4 font-semibold text-white">{k.name}</td>
-                    <td className="p-4">
-                      <code className="bg-zinc-950 px-2 py-1 rounded text-zinc-400 font-mono">
-                        {k.keyPrefix}••••••••••••{k.keySuffix}
-                      </code>
-                    </td>
-                    <td className="p-4 text-zinc-400">
-                      {new Date(k.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 text-zinc-400">
-                      {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : "Never"}
-                    </td>
-                    <td className="p-4 text-right space-x-2">
-                      <button
-                        onClick={() => {
-                          setCreatedRawKey(null);
-                          setRotatingKey(k);
-                        }}
-                        className="p-1.5 rounded border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white cursor-pointer transition-colors"
-                        title="Rotate key"
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setRevokingKey(k)}
-                        className="p-1.5 rounded border border-red-950 hover:border-red-900 bg-red-950/20 text-red-400 hover:text-red-300 cursor-pointer transition-colors"
-                        title="Revoke key"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </td>
+          {environments.length === 0 ? (
+            <div className="p-12 text-center flex flex-col items-center justify-center">
+              <Compass className="h-10 w-10 text-zinc-500 mb-4 animate-pulse" />
+              <h3 className="text-sm font-semibold text-white">No environments detected</h3>
+              <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+                Environments are automatically created when the SDK reports an event with an environment tag (e.g. &quot;production&quot;, &quot;staging&quot;).
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs text-zinc-300">
+                <thead>
+                  <tr className="border-b border-zinc-800/80 bg-zinc-900/20 text-zinc-400 font-medium">
+                    <th className="p-4">Name</th>
+                    <th className="p-4">Status</th>
+                    <th className="p-4">Discovered At</th>
+                    <th className="p-4 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Dangerous Actions Area */}
-      <div className="border border-red-900/40 bg-red-950/5 rounded-xl p-6 space-y-4">
-        <div>
-          <h2 className="text-base font-bold text-red-400">Destructive Actions</h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Permanently delete this project. All associated issues, events, API keys, and
-            configurations will be immediately soft-deleted.
-          </p>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {environments.map((env) => (
+                    <tr key={env.id} className="hover:bg-zinc-900/20">
+                      <td className="p-4 font-semibold text-white uppercase">{env.name}</td>
+                      <td className="p-4">
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            env.isHidden
+                              ? "bg-zinc-800 text-zinc-500 border border-zinc-700/55"
+                              : "bg-emerald-950 text-emerald-400 border border-emerald-900/55"
+                          }`}
+                        >
+                          {env.isHidden ? "Hidden" : "Active"}
+                        </span>
+                      </td>
+                      <td className="p-4 text-zinc-400">
+                        {new Date(env.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-4 text-right space-x-2">
+                        <button
+                          onClick={() => handleToggleEnvironmentVisibility(env.id, env.isHidden)}
+                          className="px-3 py-1.5 rounded border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white cursor-pointer transition-colors text-[11px] font-semibold"
+                        >
+                          {env.isHidden ? "Show" : "Hide"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteEnvironment(env.id)}
+                          className="p-1.5 rounded border border-red-950 hover:border-red-900 bg-red-950/20 text-red-400 hover:text-red-300 cursor-pointer transition-colors"
+                          title="Delete environment"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-        <button
-          onClick={() => setIsDeletingProject(true)}
-          className="bg-red-950/60 border border-red-800/80 hover:bg-red-900/80 text-red-200 text-xs font-semibold px-4.5 py-2 rounded-lg cursor-pointer transition-colors"
-        >
-          Delete Project
-        </button>
-      </div>
+      )}
 
       {/* Create Key Modal */}
       {isCreateModalOpen && (

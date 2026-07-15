@@ -50,7 +50,7 @@ export function Sidebar({ org }: SidebarProps) {
       name: "Releases",
       href: `/app/${org.slug}/releases`,
       icon: Layers,
-      disabled: true,
+      disabled: false,
     },
     {
       name: "Team",
