@@ -40,7 +40,9 @@ vi.mock("@/lib/db/client", () => {
 
 // Mock getSessionUser
 vi.mock("@/lib/auth/session", () => ({
-  getSessionUser: vi.fn().mockResolvedValue({ id: "user-1", displayName: "Test User", email: "test@example.com" }),
+  getSessionUser: vi
+    .fn()
+    .mockResolvedValue({ id: "user-1", displayName: "Test User", email: "test@example.com" }),
 }));
 
 // Mock createAuditLog
@@ -51,9 +53,18 @@ vi.mock("@/lib/utils/audit", () => ({
 import { db } from "@/lib/db/client";
 import { createAuditLog } from "@/lib/utils/audit";
 import { GET as getEnvironments } from "@/app/api/v1/projects/[projectId]/environments/route";
-import { PATCH as updateEnvironment, DELETE as deleteEnvironment } from "@/app/api/v1/environments/[environmentId]/route";
-import { GET as getReleases, POST as createRelease } from "@/app/api/v1/projects/[projectId]/releases/route";
-import { GET as getReleaseDetail, DELETE as deleteRelease } from "@/app/api/v1/projects/[projectId]/releases/[releaseId]/route";
+import {
+  PATCH as updateEnvironment,
+  DELETE as deleteEnvironment,
+} from "@/app/api/v1/environments/[environmentId]/route";
+import {
+  GET as getReleases,
+  POST as createRelease,
+} from "@/app/api/v1/projects/[projectId]/releases/route";
+import {
+  GET as getReleaseDetail,
+  DELETE as deleteRelease,
+} from "@/app/api/v1/projects/[projectId]/releases/[releaseId]/route";
 import { GET as compareReleases } from "@/app/api/v1/projects/[projectId]/releases/[releaseId]/compare/route";
 
 describe("Releases & Environments API Endpoints Unit Tests", () => {
@@ -221,16 +232,24 @@ describe("Releases & Environments API Endpoints Unit Tests", () => {
         _sum: { eventCount: 10, newIssueCount: 2, affectedUserCount: 4, reopenedIssueCount: 0 },
       } as any);
 
-      vi.mocked(db.event.groupBy).mockResolvedValue([
-        { issueId: "iss-1" },
-      ] as any);
+      vi.mocked(db.event.groupBy).mockResolvedValue([{ issueId: "iss-1" }] as any);
 
       vi.mocked(db.issue.findMany).mockResolvedValue([
-        { id: "iss-1", title: "Test Issue", errorType: "Error", status: "UNRESOLVED", level: "error" },
+        {
+          id: "iss-1",
+          title: "Test Issue",
+          errorType: "Error",
+          status: "UNRESOLVED",
+          level: "error",
+        },
       ] as any);
 
-      const req = new NextRequest(`http://localhost/api/v1/projects/${projectId}/releases/${releaseId}`);
-      const res = await getReleaseDetail(req, { params: Promise.resolve({ projectId, releaseId }) });
+      const req = new NextRequest(
+        `http://localhost/api/v1/projects/${projectId}/releases/${releaseId}`
+      );
+      const res = await getReleaseDetail(req, {
+        params: Promise.resolve({ projectId, releaseId }),
+      });
 
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -247,9 +266,12 @@ describe("Releases & Environments API Endpoints Unit Tests", () => {
         version: "v1.0.0",
       } as any);
 
-      const req = new NextRequest(`http://localhost/api/v1/projects/${projectId}/releases/${releaseId}`, {
-        method: "DELETE",
-      });
+      const req = new NextRequest(
+        `http://localhost/api/v1/projects/${projectId}/releases/${releaseId}`,
+        {
+          method: "DELETE",
+        }
+      );
       const res = await deleteRelease(req, { params: Promise.resolve({ projectId, releaseId }) });
 
       expect(res.status).toBe(200);
@@ -270,28 +292,48 @@ describe("Releases & Environments API Endpoints Unit Tests", () => {
         if (args.where.id === releaseId) {
           return { id: releaseId, projectId, version: "v1.1.0", createdAt: new Date() } as any;
         }
-        return { id: "rel-prev", projectId, version: "v1.0.0", createdAt: new Date(Date.now() - 86400000) } as any;
+        return {
+          id: "rel-prev",
+          projectId,
+          version: "v1.0.0",
+          createdAt: new Date(Date.now() - 86400000),
+        } as any;
       });
 
       vi.mocked(db.analyticsHourly.aggregate).mockImplementation(async (args: any) => {
         if (args.where.releaseId === releaseId) {
-          return { _sum: { eventCount: 100, newIssueCount: 5, affectedUserCount: 20, reopenedIssueCount: 2 } } as any;
+          return {
+            _sum: {
+              eventCount: 100,
+              newIssueCount: 5,
+              affectedUserCount: 20,
+              reopenedIssueCount: 2,
+            },
+          } as any;
         }
-        return { _sum: { eventCount: 50, newIssueCount: 2, affectedUserCount: 10, reopenedIssueCount: 0 } } as any;
+        return {
+          _sum: { eventCount: 50, newIssueCount: 2, affectedUserCount: 10, reopenedIssueCount: 0 },
+        } as any;
       });
 
       // Mock new issues list
-      vi.mocked(db.event.groupBy).mockResolvedValue([
-        { issueId: "iss-new" },
-      ] as any);
+      vi.mocked(db.event.groupBy).mockResolvedValue([{ issueId: "iss-new" }] as any);
 
       vi.mocked(db.event.findMany).mockResolvedValue([] as any); // no occurrences of these issues in baseline
 
       vi.mocked(db.issue.findMany).mockResolvedValue([
-        { id: "iss-new", title: "New Issue In Release", errorType: "TypeError", status: "UNRESOLVED", level: "error" },
+        {
+          id: "iss-new",
+          title: "New Issue In Release",
+          errorType: "TypeError",
+          status: "UNRESOLVED",
+          level: "error",
+        },
       ] as any);
 
-      const req = new NextRequest(`http://localhost/api/v1/projects/${projectId}/releases/${releaseId}/compare`);
+      const req = new NextRequest(
+        `http://localhost/api/v1/projects/${projectId}/releases/${releaseId}/compare`
+      );
       const res = await compareReleases(req, { params: Promise.resolve({ projectId, releaseId }) });
 
       expect(res.status).toBe(200);

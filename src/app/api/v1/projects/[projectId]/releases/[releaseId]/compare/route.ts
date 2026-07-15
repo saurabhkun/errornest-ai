@@ -132,9 +132,7 @@ export async function GET(
         by: ["issueId"],
         where: { projectId, releaseId: comparisonRelease.id },
       });
-      comparisonIssueIds = compIssuesGroup
-        .map((g) => g.issueId)
-        .filter((id): id is string => !!id);
+      comparisonIssueIds = compIssuesGroup.map((g) => g.issueId).filter((id): id is string => !!id);
     }
 
     // New issues = present in current release but NOT in comparison release

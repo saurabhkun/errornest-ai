@@ -473,7 +473,8 @@ export function ProjectDetailClient({
                 <Key className="h-10 w-10 text-zinc-500 mb-4" />
                 <h3 className="text-sm font-semibold text-white">No active API keys</h3>
                 <p className="text-xs text-zinc-500 mt-1 max-w-xs">
-                  Generate an API key to allow the ErrorNest SDK to send error payloads from your code.
+                  Generate an API key to allow the ErrorNest SDK to send error payloads from your
+                  code.
                 </p>
               </div>
             ) : (
@@ -553,7 +554,8 @@ export function ProjectDetailClient({
           <div className="p-6 border-b border-zinc-800">
             <h2 className="text-lg font-bold text-white">Project Environments</h2>
             <p className="text-xs text-zinc-400 mt-1">
-              Configure environment display settings and visibility. Hiding an environment will exclude it from dashboard summaries.
+              Configure environment display settings and visibility. Hiding an environment will
+              exclude it from dashboard summaries.
             </p>
           </div>
 
@@ -562,7 +564,8 @@ export function ProjectDetailClient({
               <Compass className="h-10 w-10 text-zinc-500 mb-4 animate-pulse" />
               <h3 className="text-sm font-semibold text-white">No environments detected</h3>
               <p className="text-xs text-zinc-500 mt-1 max-w-xs">
-                Environments are automatically created when the SDK reports an event with an environment tag (e.g. &quot;production&quot;, &quot;staging&quot;).
+                Environments are automatically created when the SDK reports an event with an
+                environment tag (e.g. &quot;production&quot;, &quot;staging&quot;).
               </p>
             </div>
           ) : (

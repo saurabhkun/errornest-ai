@@ -101,7 +101,13 @@ export async function POST(
 
     if (!membership) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Only organization Owners, Admins, and Members can create releases", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Only organization Owners, Admins, and Members can create releases",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }

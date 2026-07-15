@@ -46,7 +46,13 @@ export async function PATCH(
 
     if (!membership) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Only organization Owners, Admins, and Members can modify environments", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Only organization Owners, Admins, and Members can modify environments",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }
@@ -138,7 +144,13 @@ export async function DELETE(
 
     if (!membership) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Only organization Owners and Admins can delete environments", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Only organization Owners and Admins can delete environments",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }

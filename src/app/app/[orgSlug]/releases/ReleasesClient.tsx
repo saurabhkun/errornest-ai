@@ -270,7 +270,8 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
             <span>Releases</span>
           </h1>
           <p className="text-sm text-zinc-400">
-            Track release stability, monitor error rates, and compare health metrics between deployments.
+            Track release stability, monitor error rates, and compare health metrics between
+            deployments.
           </p>
         </div>
 
@@ -326,7 +327,8 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
             <Layers className="h-12 w-12 text-zinc-600 mb-4 animate-bounce" />
             <h3 className="text-base font-bold text-white">No releases discovered</h3>
             <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
-              Register a new release version manually using the button above, or tags will be automatically created as they are ingested from your application SDK.
+              Register a new release version manually using the button above, or tags will be
+              automatically created as they are ingested from your application SDK.
             </p>
           </div>
         ) : (
@@ -428,7 +430,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-450">Version Tag (Required)</label>
+                  <label className="text-xs font-semibold text-zinc-450">
+                    Version Tag (Required)
+                  </label>
                   <input
                     type="text"
                     required
@@ -440,7 +444,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-450">Commit SHA (Optional)</label>
+                  <label className="text-xs font-semibold text-zinc-450">
+                    Commit SHA (Optional)
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. 7f3a8b2c"
@@ -451,7 +457,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-450">Deployment Time (Optional)</label>
+                  <label className="text-xs font-semibold text-zinc-450">
+                    Deployment Time (Optional)
+                  </label>
                   <input
                     type="datetime-local"
                     value={newDeployedAt}
@@ -492,7 +500,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
               <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-950/30 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <Layers className="h-5 w-5 text-emerald-500" />
-                  <span className="text-lg font-bold text-white">Release details: {selectedRelease.version}</span>
+                  <span className="text-lg font-bold text-white">
+                    Release details: {selectedRelease.version}
+                  </span>
                 </div>
                 <button
                   onClick={() => setSelectedRelease(null)}
@@ -512,23 +522,41 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                   {/* KPI Cards Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Total Events</span>
-                      <span className="block text-xl font-black text-white mt-1">{details.metrics.eventCount}</span>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Total Events
+                      </span>
+                      <span className="block text-xl font-black text-white mt-1">
+                        {details.metrics.eventCount}
+                      </span>
                     </div>
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Unique Issues</span>
-                      <span className="block text-xl font-black text-white mt-1">{details.metrics.uniqueIssuesCount}</span>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Unique Issues
+                      </span>
+                      <span className="block text-xl font-black text-white mt-1">
+                        {details.metrics.uniqueIssuesCount}
+                      </span>
                     </div>
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">New Issues</span>
-                      <span className="block text-xl font-black text-white mt-1">{details.metrics.newIssueCount}</span>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        New Issues
+                      </span>
+                      <span className="block text-xl font-black text-white mt-1">
+                        {details.metrics.newIssueCount}
+                      </span>
                     </div>
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Regressions</span>
-                      <span className="block text-xl font-black text-white mt-1">{details.metrics.regressionsCount}</span>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Regressions
+                      </span>
+                      <span className="block text-xl font-black text-white mt-1">
+                        {details.metrics.regressionsCount}
+                      </span>
                     </div>
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4 col-span-2 md:col-span-1">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Error Rate</span>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Error Rate
+                      </span>
                       <span className="inline-block px-1.5 py-0.5 rounded text-[11px] font-bold mt-1 bg-emerald-950 text-emerald-400 border border-emerald-900/50">
                         {details.metrics.errorRate}%
                       </span>
@@ -537,7 +565,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
 
                   {/* Issues Table */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-white tracking-tight">Issues Occurred in this Release</h3>
+                    <h3 className="text-sm font-bold text-white tracking-tight">
+                      Issues Occurred in this Release
+                    </h3>
                     {details.issues.length === 0 ? (
                       <div className="p-8 text-center bg-zinc-950/20 border border-zinc-800/40 rounded-xl text-zinc-500 text-xs font-semibold">
                         No events have been reported for this release.
@@ -568,7 +598,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                                     {issue.level}
                                   </span>
                                   <span className="font-bold text-white">{issue.title}</span>
-                                  <span className="block text-[10px] text-zinc-500 mt-0.5">{issue.errorType}</span>
+                                  <span className="block text-[10px] text-zinc-500 mt-0.5">
+                                    {issue.errorType}
+                                  </span>
                                 </td>
                                 <td className="p-3 uppercase font-semibold text-zinc-400">
                                   {issue.status.toLowerCase()}
@@ -665,40 +697,72 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                   {/* Delta Cards Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Event Count Delta</span>
-                      <span className={`block text-xl font-black mt-1 ${
-                        comparison.metrics.deltas.eventCount > 0 ? "text-rose-400" : comparison.metrics.deltas.eventCount < 0 ? "text-emerald-400" : "text-zinc-300"
-                      }`}>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Event Count Delta
+                      </span>
+                      <span
+                        className={`block text-xl font-black mt-1 ${
+                          comparison.metrics.deltas.eventCount > 0
+                            ? "text-rose-400"
+                            : comparison.metrics.deltas.eventCount < 0
+                              ? "text-emerald-400"
+                              : "text-zinc-300"
+                        }`}
+                      >
                         {comparison.metrics.deltas.eventCount > 0 ? "+" : ""}
                         {comparison.metrics.deltas.eventCount}
                       </span>
                     </div>
 
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">New Issues Delta</span>
-                      <span className={`block text-xl font-black mt-1 ${
-                        comparison.metrics.deltas.newIssueCount > 0 ? "text-rose-400" : comparison.metrics.deltas.newIssueCount < 0 ? "text-emerald-400" : "text-zinc-300"
-                      }`}>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        New Issues Delta
+                      </span>
+                      <span
+                        className={`block text-xl font-black mt-1 ${
+                          comparison.metrics.deltas.newIssueCount > 0
+                            ? "text-rose-400"
+                            : comparison.metrics.deltas.newIssueCount < 0
+                              ? "text-emerald-400"
+                              : "text-zinc-300"
+                        }`}
+                      >
                         {comparison.metrics.deltas.newIssueCount > 0 ? "+" : ""}
                         {comparison.metrics.deltas.newIssueCount}
                       </span>
                     </div>
 
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Affected Users Delta</span>
-                      <span className={`block text-xl font-black mt-1 ${
-                        comparison.metrics.deltas.affectedUserCount > 0 ? "text-rose-400" : comparison.metrics.deltas.affectedUserCount < 0 ? "text-emerald-400" : "text-zinc-300"
-                      }`}>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Affected Users Delta
+                      </span>
+                      <span
+                        className={`block text-xl font-black mt-1 ${
+                          comparison.metrics.deltas.affectedUserCount > 0
+                            ? "text-rose-400"
+                            : comparison.metrics.deltas.affectedUserCount < 0
+                              ? "text-emerald-400"
+                              : "text-zinc-300"
+                        }`}
+                      >
                         {comparison.metrics.deltas.affectedUserCount > 0 ? "+" : ""}
                         {comparison.metrics.deltas.affectedUserCount}
                       </span>
                     </div>
 
                     <div className="bg-zinc-950/40 border border-zinc-800/80 rounded-xl p-4">
-                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Regressions Delta</span>
-                      <span className={`block text-xl font-black mt-1 ${
-                        comparison.metrics.deltas.regressionsCount > 0 ? "text-rose-400" : comparison.metrics.deltas.regressionsCount < 0 ? "text-emerald-400" : "text-zinc-300"
-                      }`}>
+                      <span className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                        Regressions Delta
+                      </span>
+                      <span
+                        className={`block text-xl font-black mt-1 ${
+                          comparison.metrics.deltas.regressionsCount > 0
+                            ? "text-rose-400"
+                            : comparison.metrics.deltas.regressionsCount < 0
+                              ? "text-emerald-400"
+                              : "text-zinc-300"
+                        }`}
+                      >
                         {comparison.metrics.deltas.regressionsCount > 0 ? "+" : ""}
                         {comparison.metrics.deltas.regressionsCount}
                       </span>
@@ -708,7 +772,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                   {/* New Issues introduced */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white tracking-tight">New Issues Introduced in {compareRelease.version}</h3>
+                      <h3 className="text-sm font-bold text-white tracking-tight">
+                        New Issues Introduced in {compareRelease.version}
+                      </h3>
                       {comparison.comparisonRelease && (
                         <span className="text-[10px] text-zinc-500 font-medium">
                           (not present in {comparison.comparisonRelease.version})
@@ -718,7 +784,8 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
 
                     {comparison.newIssues.length === 0 ? (
                       <div className="p-8 text-center bg-zinc-950/20 border border-zinc-800/40 rounded-xl text-zinc-500 text-xs font-semibold">
-                        No new issues were introduced in this release compared to the selected baseline.
+                        No new issues were introduced in this release compared to the selected
+                        baseline.
                       </div>
                     ) : (
                       <div className="border border-zinc-850 rounded-xl overflow-hidden">
@@ -746,7 +813,9 @@ export function ReleasesClient({ org, projects }: ReleasesClientProps) {
                                     {issue.level}
                                   </span>
                                   <span className="font-bold text-white">{issue.title}</span>
-                                  <span className="block text-[10px] text-zinc-500 mt-0.5">{issue.errorType}</span>
+                                  <span className="block text-[10px] text-zinc-500 mt-0.5">
+                                    {issue.errorType}
+                                  </span>
                                 </td>
                                 <td className="p-3 uppercase font-semibold text-zinc-400">
                                   {issue.status.toLowerCase()}

@@ -153,7 +153,13 @@ export async function DELETE(
 
     if (!membership) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Only organization Owners and Admins can delete releases", requestId } },
+        {
+          error: {
+            code: "FORBIDDEN",
+            message: "Only organization Owners and Admins can delete releases",
+            requestId,
+          },
+        },
         { status: 403, headers: responseHeaders }
       );
     }
