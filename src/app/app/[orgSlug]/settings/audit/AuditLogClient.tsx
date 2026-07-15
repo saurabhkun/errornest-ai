@@ -90,22 +90,41 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
   // Helper to format action tags beautifully
   const formatActionTag = (action: string) => {
     if (action.endsWith("_CREATE")) {
-      return <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/80 border border-emerald-900/50 text-emerald-400">CREATE</span>;
+      return (
+        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/80 border border-emerald-900/50 text-emerald-400">
+          CREATE
+        </span>
+      );
     }
     if (action.endsWith("_UPDATE")) {
-      return <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-950/80 border border-blue-900/50 text-blue-400">UPDATE</span>;
+      return (
+        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-950/80 border border-blue-900/50 text-blue-400">
+          UPDATE
+        </span>
+      );
     }
     if (action.endsWith("_DELETE")) {
-      return <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-950/80 border border-rose-900/50 text-rose-400">DELETE</span>;
+      return (
+        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-950/80 border border-rose-900/50 text-rose-400">
+          DELETE
+        </span>
+      );
     }
-    return <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-800 border border-zinc-700 text-zinc-300">{action}</span>;
+    return (
+      <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-800 border border-zinc-700 text-zinc-300">
+        {action}
+      </span>
+    );
   };
 
   const renderJsonDiff = (before: unknown, after: unknown) => {
-    const beforeObj = before && typeof before === "object" ? (before as Record<string, unknown>) : null;
+    const beforeObj =
+      before && typeof before === "object" ? (before as Record<string, unknown>) : null;
     const afterObj = after && typeof after === "object" ? (after as Record<string, unknown>) : null;
-    const beforeStr = beforeObj && Object.keys(beforeObj).length > 0 ? JSON.stringify(beforeObj, null, 2) : null;
-    const afterStr = afterObj && Object.keys(afterObj).length > 0 ? JSON.stringify(afterObj, null, 2) : null;
+    const beforeStr =
+      beforeObj && Object.keys(beforeObj).length > 0 ? JSON.stringify(beforeObj, null, 2) : null;
+    const afterStr =
+      afterObj && Object.keys(afterObj).length > 0 ? JSON.stringify(afterObj, null, 2) : null;
 
     if (!beforeStr && !afterStr) {
       return <div className="text-zinc-500 text-sm italic">No state changes recorded.</div>;
@@ -114,13 +133,17 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs overflow-x-auto">
         <div className="space-y-1.5">
-          <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Before State</div>
+          <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+            Before State
+          </div>
           <pre className="p-4 bg-zinc-950 border border-zinc-800/80 rounded-lg overflow-x-auto text-rose-300 max-h-72 overflow-y-auto">
             {beforeStr || "null (Initial)"}
           </pre>
         </div>
         <div className="space-y-1.5">
-          <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">After State</div>
+          <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+            After State
+          </div>
           <pre className="p-4 bg-zinc-950 border border-zinc-800/80 rounded-lg overflow-x-auto text-emerald-300 max-h-72 overflow-y-auto">
             {afterStr || "null (Deleted)"}
           </pre>
@@ -163,7 +186,9 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-4 bg-zinc-950/40 p-4 border border-zinc-800/60 rounded-xl">
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Action Type</label>
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+            Action Type
+          </label>
           <select
             value={actionFilter}
             onChange={handleActionFilterChange}
@@ -179,7 +204,9 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Resource Type</label>
+          <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+            Resource Type
+          </label>
           <select
             value={targetFilter}
             onChange={handleTargetFilterChange}
@@ -236,17 +263,23 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
                       </td>
                       <td className="p-4">
                         <div className="font-semibold text-zinc-200">{log.actorNameSnapshot}</div>
-                        <div className="text-[10px] text-zinc-500 font-mono">{log.actorEmailSnapshot}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono">
+                          {log.actorEmailSnapshot}
+                        </div>
                       </td>
                       <td className="p-4">
                         <div className="flex flex-col gap-1 items-start">
                           {formatActionTag(log.actionType)}
-                          <span className="text-[10px] text-zinc-500 font-semibold">{log.actionType.replace(/_/g, " ")}</span>
+                          <span className="text-[10px] text-zinc-500 font-semibold">
+                            {log.actionType.replace(/_/g, " ")}
+                          </span>
                         </div>
                       </td>
                       <td className="p-4">
                         <div className="font-semibold text-zinc-200">{log.targetType}</div>
-                        <div className="text-[10px] text-zinc-500 font-mono select-all truncate max-w-[140px]">{log.targetId}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono select-all truncate max-w-[140px]">
+                          {log.targetId}
+                        </div>
                       </td>
                       <td className="p-4 font-mono text-[10px] text-zinc-500 space-y-0.5">
                         <div>IP: {log.ipAddress || "System"}</div>
@@ -331,26 +364,38 @@ export function AuditLogClient({ orgId }: AuditLogClientProps) {
             {/* Info Metadata Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-zinc-900/40 p-4 border border-zinc-850 rounded-xl text-xs">
               <div>
-                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">Actor</span>
+                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">
+                  Actor
+                </span>
                 <span className="text-zinc-200 font-semibold">{selectedLog.actorNameSnapshot}</span>
               </div>
               <div>
-                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">Action Type</span>
-                <span className="text-zinc-200 font-mono font-semibold">{selectedLog.actionType}</span>
+                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">
+                  Action Type
+                </span>
+                <span className="text-zinc-200 font-mono font-semibold">
+                  {selectedLog.actionType}
+                </span>
               </div>
               <div>
-                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">Resource</span>
+                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">
+                  Resource
+                </span>
                 <span className="text-zinc-200 font-semibold">{selectedLog.targetType}</span>
               </div>
               <div>
-                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">IP / Request ID</span>
+                <span className="text-zinc-500 font-bold block uppercase tracking-wider text-[10px]">
+                  IP / Request ID
+                </span>
                 <span className="text-zinc-200 font-mono">{selectedLog.ipAddress || "System"}</span>
               </div>
             </div>
 
             {/* Render Diffs */}
             <div className="space-y-2">
-              <span className="text-zinc-400 font-bold text-xs uppercase tracking-wider block">State Differences</span>
+              <span className="text-zinc-400 font-bold text-xs uppercase tracking-wider block">
+                State Differences
+              </span>
               {renderJsonDiff(selectedLog.beforeState, selectedLog.afterState)}
             </div>
           </div>

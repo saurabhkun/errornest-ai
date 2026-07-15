@@ -157,7 +157,13 @@ export async function POST(
 
     // Persist result
     const saved = await db.aiResult.upsert({
-      where: { issueId_type_inputFingerprint: { issueId, type: "EXPLANATION", inputFingerprint: fingerprint } },
+      where: {
+        issueId_type_inputFingerprint: {
+          issueId,
+          type: "EXPLANATION",
+          inputFingerprint: fingerprint,
+        },
+      },
       update: {
         content: aiResponse.data.content,
         model: aiResponse.data.model,

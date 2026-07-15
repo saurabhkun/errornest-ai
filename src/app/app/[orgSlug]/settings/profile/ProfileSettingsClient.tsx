@@ -82,7 +82,11 @@ export function ProfileSettingsClient({ user }: ProfileSettingsClientProps) {
   };
 
   const handleRevokeSession = async (sessionId: string) => {
-    if (!confirm("Are you sure you want to revoke this session? You will be logged out of that device.")) {
+    if (
+      !confirm(
+        "Are you sure you want to revoke this session? You will be logged out of that device."
+      )
+    ) {
       return;
     }
 
@@ -152,7 +156,10 @@ export function ProfileSettingsClient({ user }: ProfileSettingsClientProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="display-name" className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+            <label
+              htmlFor="display-name"
+              className="text-xs font-bold text-zinc-400 uppercase tracking-wider block"
+            >
               Display Name
             </label>
             <input
@@ -193,7 +200,8 @@ export function ProfileSettingsClient({ user }: ProfileSettingsClientProps) {
         <div>
           <h2 className="text-xl font-bold text-white">Active Login Sessions</h2>
           <p className="text-zinc-400 text-sm mt-1">
-            Devices currently logged into your ErrorNest account. You can revoke access for any session at any time.
+            Devices currently logged into your ErrorNest account. You can revoke access for any
+            session at any time.
           </p>
         </div>
 
@@ -210,7 +218,10 @@ export function ProfileSettingsClient({ user }: ProfileSettingsClientProps) {
           <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-950/40">
             <div className="divide-y divide-zinc-800/60">
               {sessions.map((session) => (
-                <div key={session.id} className="flex items-center justify-between p-4 hover:bg-zinc-900/25 transition-all">
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between p-4 hover:bg-zinc-900/25 transition-all"
+                >
                   <div className="flex items-start gap-3.5">
                     <div className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 shrink-0">
                       <Monitor className="h-5 w-5" />

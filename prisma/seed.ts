@@ -14,7 +14,9 @@ import {
 
 import { PrismaNeon } from "@prisma/adapter-neon";
 
-const databaseUrl = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/errornest?sslmode=disable";
+const databaseUrl =
+  process.env.DATABASE_URL ||
+  "postgresql://postgres:postgres@localhost:5432/errornest?sslmode=disable";
 const adapter = new PrismaNeon({ connectionString: databaseUrl });
 const prisma = new PrismaClient({ adapter });
 
@@ -350,7 +352,7 @@ async function main() {
         tags: JSON.stringify({
           browser: j % 2 === 0 ? "Chrome" : "Firefox",
           os: j % 2 === 0 ? "Windows" : "MacOS",
-          device: j % 3 === 0 ? "Desktop" : (j % 3 === 1 ? "Mobile" : "Tablet"),
+          device: j % 3 === 0 ? "Desktop" : j % 3 === 1 ? "Mobile" : "Tablet",
         }),
         rawPayload: JSON.stringify({
           originalError: issue.title,
@@ -371,16 +373,19 @@ async function main() {
   // 10b. Aggregate seed events into AnalyticsHourly
   console.log("🌱 Aggregating seed events into AnalyticsHourly...");
   const seededEvents = await prisma.event.findMany({});
-  const rollupsMap = new Map<string, {
-    projectId: string;
-    environmentId: string;
-    releaseId: string | null;
-    bucketStart: Date;
-    eventCount: number;
-    newIssueCount: number;
-    reopenedIssueCount: number;
-    affectedUsers: Set<string>;
-  }>();
+  const rollupsMap = new Map<
+    string,
+    {
+      projectId: string;
+      environmentId: string;
+      releaseId: string | null;
+      bucketStart: Date;
+      eventCount: number;
+      newIssueCount: number;
+      reopenedIssueCount: number;
+      affectedUsers: Set<string>;
+    }
+  >();
 
   for (const ev of seededEvents) {
     const bucketStart = new Date(ev.createdAt || ev.serverReceivedAt);
@@ -428,7 +433,6 @@ async function main() {
       },
     });
   }
-
 
   // Update Occurrence counts and affected user counts in issues
   console.log("📈 Updating issue summary metrics...");

@@ -139,11 +139,13 @@ export async function GET(request: NextRequest) {
 
       const device =
         tags.device ||
-        (os.toLowerCase().includes("win") || os.toLowerCase().includes("mac") || os.toLowerCase().includes("linux")
+        (os.toLowerCase().includes("win") ||
+        os.toLowerCase().includes("mac") ||
+        os.toLowerCase().includes("linux")
           ? "Desktop"
           : os.toLowerCase().includes("ios") || os.toLowerCase().includes("android")
-          ? "Mobile"
-          : "Unknown Device");
+            ? "Mobile"
+            : "Unknown Device");
       deviceMap[device] = (deviceMap[device] || 0) + 1;
 
       // 3. User Impact

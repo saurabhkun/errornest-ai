@@ -140,7 +140,10 @@ describe("Analytics Module Unit Tests", () => {
       vi.mocked(db.analyticsHourly.aggregate).mockResolvedValueOnce({
         _sum: { eventCount: 150 },
       } as any);
-      vi.mocked(db.event.groupBy).mockResolvedValueOnce([{ issueId: "iss-1" }, { issueId: "iss-2" }] as any); // totalIssues
+      vi.mocked(db.event.groupBy).mockResolvedValueOnce([
+        { issueId: "iss-1" },
+        { issueId: "iss-2" },
+      ] as any); // totalIssues
       vi.mocked(db.event.groupBy).mockResolvedValueOnce([{ userExternalId: "u-1" }] as any); // affectedUsers
       vi.mocked(db.issue.count).mockResolvedValueOnce(5); // newIssuesToday
       vi.mocked(db.issueActivity.count).mockResolvedValueOnce(2); // regressions
@@ -173,7 +176,9 @@ describe("Analytics Module Unit Tests", () => {
         },
       ] as any);
 
-      const req = new NextRequest(`http://localhost/api/v1/analytics/trends?projectId=${projId}&period=24h&from=2026-07-15T00:00:00Z&to=2026-07-15T23:59:59Z`);
+      const req = new NextRequest(
+        `http://localhost/api/v1/analytics/trends?projectId=${projId}&period=24h&from=2026-07-15T00:00:00Z&to=2026-07-15T23:59:59Z`
+      );
       const res = await getTrends(req);
       if (res.status !== 200) {
         console.log("Trends Error Response:", JSON.stringify(await res.json(), null, 2));
@@ -183,9 +188,7 @@ describe("Analytics Module Unit Tests", () => {
       const body = await res.json();
       expect(body.data).toBeInstanceOf(Array);
       // Verify bucket filling logic works
-      const targetBucket = body.data.find(
-        (t: any) => new Date(t.timestamp).getUTCHours() === 12
-      );
+      const targetBucket = body.data.find((t: any) => new Date(t.timestamp).getUTCHours() === 12);
       expect(targetBucket).toBeDefined();
       expect(targetBucket.eventCount).toBe(15);
     });
@@ -272,7 +275,9 @@ describe("Analytics Module Unit Tests", () => {
         },
       ] as any);
 
-      const req = new NextRequest(`http://localhost/api/v1/analytics/environments?projectId=${projId}`);
+      const req = new NextRequest(
+        `http://localhost/api/v1/analytics/environments?projectId=${projId}`
+      );
       const res = await getEnvironments(req);
       if (res.status !== 200) {
         console.log("Environments Error Response:", JSON.stringify(await res.json(), null, 2));

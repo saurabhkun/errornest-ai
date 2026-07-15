@@ -13,8 +13,14 @@ function BaseLayout({ title, previewText, children }: BaseLayoutProps) {
         "head",
         null,
         React.createElement("title", null, title),
-        React.createElement("meta", { name: "viewport", content: "width=device-width, initial-scale=1.0" }),
-        React.createElement("meta", { httpEquiv: "Content-Type", content: "text/html; charset=UTF-8" })
+        React.createElement("meta", {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1.0",
+        }),
+        React.createElement("meta", {
+          httpEquiv: "Content-Type",
+          content: "text/html; charset=UTF-8",
+        })
       )}
       <body
         style={{

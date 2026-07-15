@@ -39,7 +39,8 @@ export default async function SettingsLayout({ children, params }: SettingsLayou
               Settings
             </h1>
             <p className="text-zinc-400 mt-2 text-sm">
-              Manage settings and view security audit logs for <span className="text-emerald-400 font-semibold">{org.name}</span>
+              Manage settings and view security audit logs for{" "}
+              <span className="text-emerald-400 font-semibold">{org.name}</span>
             </p>
           </div>
         </div>

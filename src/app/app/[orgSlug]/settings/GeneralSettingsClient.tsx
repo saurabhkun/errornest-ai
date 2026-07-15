@@ -106,7 +106,10 @@ export function GeneralSettingsClient({ organization, userRole }: GeneralSetting
 
         <form onSubmit={handleUpdate} className="space-y-4 max-w-xl">
           <div className="space-y-2">
-            <label htmlFor="org-name" className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+            <label
+              htmlFor="org-name"
+              className="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+            >
               Organization Name
             </label>
             <input
@@ -127,7 +130,8 @@ export function GeneralSettingsClient({ organization, userRole }: GeneralSetting
               /app/{organization.slug}
             </div>
             <p className="text-[11px] text-zinc-500">
-              Note: Changing organization name will update the URL slug. Active sessions and bookmarks might be disrupted.
+              Note: Changing organization name will update the URL slug. Active sessions and
+              bookmarks might be disrupted.
             </p>
           </div>
 
@@ -181,7 +185,8 @@ export function GeneralSettingsClient({ organization, userRole }: GeneralSetting
             <div>
               <h4 className="font-semibold text-white text-sm">Delete this Organization</h4>
               <p className="text-zinc-500 text-xs mt-0.5">
-                Once deleted, all projects, api keys, issues, alerts, and historical event telemetry are permanently soft-deleted.
+                Once deleted, all projects, api keys, issues, alerts, and historical event telemetry
+                are permanently soft-deleted.
               </p>
             </div>
             {isOwner ? (
@@ -212,14 +217,17 @@ export function GeneralSettingsClient({ organization, userRole }: GeneralSetting
                 Are you absolutely sure?
               </h3>
               <p className="text-zinc-400 text-sm">
-                This action cannot be undone. All projects and event feeds in this organization will be soft-deleted.
+                This action cannot be undone. All projects and event feeds in this organization will
+                be soft-deleted.
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
-                  Please type <span className="text-rose-400 font-mono select-all">{organization.slug}</span> to confirm
+                  Please type{" "}
+                  <span className="text-rose-400 font-mono select-all">{organization.slug}</span> to
+                  confirm
                 </label>
                 <input
                   type="text"

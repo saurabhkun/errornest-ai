@@ -11,8 +11,7 @@ export interface AiProviderError {
 }
 
 export type AiProviderResponse =
-  | { ok: true; data: AiProviderResult }
-  | { ok: false; error: AiProviderError };
+  { ok: true; data: AiProviderResult } | { ok: false; error: AiProviderError };
 
 const MODEL_NAME = "gemini-2.0-flash";
 const MAX_OUTPUT_TOKENS = 1024;
@@ -115,9 +114,7 @@ export async function callGemini(params: {
   }
 
   const prompt =
-    params.type === "EXPLANATION"
-      ? buildExplainPrompt(params)
-      : buildSuggestFixPrompt(params);
+    params.type === "EXPLANATION" ? buildExplainPrompt(params) : buildSuggestFixPrompt(params);
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -147,7 +144,10 @@ export async function callGemini(params: {
     if (message.toLowerCase().includes("quota") || message.toLowerCase().includes("429")) {
       return {
         ok: false,
-        error: { code: "RATE_LIMITED", message: "AI provider rate limit reached. Try again later." },
+        error: {
+          code: "RATE_LIMITED",
+          message: "AI provider rate limit reached. Try again later.",
+        },
       };
     }
 

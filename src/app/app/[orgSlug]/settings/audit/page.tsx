@@ -4,11 +4,7 @@ import { db } from "@/lib/db/client";
 import { redirect } from "next/navigation";
 import { AuditLogClient } from "./AuditLogClient";
 
-export default async function AuditLogPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>;
-}) {
+export default async function AuditLogPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const user = await getSessionUser();
   if (!user) {

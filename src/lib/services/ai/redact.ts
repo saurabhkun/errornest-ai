@@ -26,7 +26,8 @@ const REDACT_PATTERNS: Array<{ name: string; pattern: RegExp; replacement: strin
   },
   {
     name: "api_key_header",
-    pattern: /(api[-_]?key|token|secret|password|passwd|pwd|auth)\s*[:=]\s*["']?[\w\-./+=]{8,}["']?/gi,
+    pattern:
+      /(api[-_]?key|token|secret|password|passwd|pwd|auth)\s*[:=]\s*["']?[\w\-./+=]{8,}["']?/gi,
     replacement: "$1=[REDACTED]",
   },
   {

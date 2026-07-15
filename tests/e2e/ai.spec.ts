@@ -18,9 +18,7 @@ test.describe("AI Assistant Panel E2E Flow", () => {
       // The AI Assistant section should be visible in the sidebar
       await expect(page.locator("text=AI Assistant")).toBeVisible({ timeout: 8000 });
     } catch (e) {
-      console.warn(
-        "Skipping AI panel E2E: " + (e instanceof Error ? e.message : String(e))
-      );
+      console.warn("Skipping AI panel E2E: " + (e instanceof Error ? e.message : String(e)));
     }
   });
 
@@ -47,7 +45,9 @@ test.describe("AI Assistant Panel E2E Flow", () => {
       await firstIssue.click();
 
       // Explain panel is expanded by default; look for the action button
-      await expect(page.locator("button:has-text('Explain this error')")).toBeVisible({ timeout: 8000 });
+      await expect(page.locator("button:has-text('Explain this error')")).toBeVisible({
+        timeout: 8000,
+      });
     } catch (e) {
       console.warn("Skipping E2E: " + (e instanceof Error ? e.message : String(e)));
     }

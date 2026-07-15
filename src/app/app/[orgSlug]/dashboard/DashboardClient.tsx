@@ -137,13 +137,7 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
           fetch(`/api/v1/analytics/environments?${query}`),
         ]);
 
-        if (
-          !overviewRes.ok ||
-          !trendsRes.ok ||
-          !releasesRes.ok ||
-          !issuesRes.ok ||
-          !envsRes.ok
-        ) {
+        if (!overviewRes.ok || !trendsRes.ok || !releasesRes.ok || !issuesRes.ok || !envsRes.ok) {
           throw new Error("One or more analytics requests failed. Please try again.");
         }
 
@@ -586,7 +580,9 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
             <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-5 flex flex-col">
               <div className="mb-4">
                 <h3 className="text-sm font-semibold text-zinc-300">Top Issues</h3>
-                <p className="text-xs text-zinc-500">Most frequent exceptions in the select period</p>
+                <p className="text-xs text-zinc-500">
+                  Most frequent exceptions in the select period
+                </p>
               </div>
 
               <div className="flex-1 overflow-x-auto">
@@ -613,8 +609,8 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                                 issue.level === "fatal"
                                   ? "bg-red-950 text-red-400 border border-red-900/50"
                                   : issue.level === "warning"
-                                  ? "bg-amber-950 text-amber-400 border border-amber-900/50"
-                                  : "bg-zinc-800 text-zinc-300"
+                                    ? "bg-amber-950 text-amber-400 border border-amber-900/50"
+                                    : "bg-zinc-800 text-zinc-300"
                               }`}
                             >
                               {issue.level}
@@ -653,7 +649,9 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                 {releases.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 text-zinc-500">
                     <Layers className="h-8 w-8 text-zinc-600 mb-2" />
-                    <span className="text-xs font-medium">No releases configured for this project</span>
+                    <span className="text-xs font-medium">
+                      No releases configured for this project
+                    </span>
                   </div>
                 ) : (
                   <table className="w-full text-left border-collapse">
@@ -688,8 +686,8 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                                 rel.errorRate > 5
                                   ? "text-red-400 bg-red-950/20 border border-red-900/45"
                                   : rel.errorRate > 1
-                                  ? "text-amber-400 bg-amber-950/20 border border-amber-900/45"
-                                  : "text-emerald-400 bg-emerald-950/20 border border-emerald-900/45"
+                                    ? "text-amber-400 bg-amber-950/20 border border-amber-900/45"
+                                    : "text-emerald-400 bg-emerald-950/20 border border-emerald-900/45"
                               }`}
                             >
                               {rel.errorRate}%
@@ -782,13 +780,19 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                   ) : (
                     <div className="space-y-2">
                       {breakdowns.operatingSystems.slice(0, 3).map((os, idx) => (
-                        <div key={idx} className="flex justify-between text-xs font-semibold text-zinc-300">
+                        <div
+                          key={idx}
+                          className="flex justify-between text-xs font-semibold text-zinc-300"
+                        >
                           <span className="text-zinc-500">{os.name}</span>
                           <span>{os.count}</span>
                         </div>
                       ))}
                       {breakdowns.devices.slice(0, 2).map((dev, idx) => (
-                        <div key={idx} className="flex justify-between text-xs font-semibold text-zinc-300 border-t border-zinc-800/30 pt-2 mt-2">
+                        <div
+                          key={idx}
+                          className="flex justify-between text-xs font-semibold text-zinc-300 border-t border-zinc-800/30 pt-2 mt-2"
+                        >
                           <span className="text-zinc-500">{dev.name}</span>
                           <span>{dev.count}</span>
                         </div>
@@ -820,7 +824,9 @@ export function DashboardClient({ org, projects }: DashboardClientProps) {
                           <span className="block font-bold text-zinc-300 truncate">
                             {u.email || u.id}
                           </span>
-                          <span className="text-[10px] text-zinc-500 block truncate">ID: {u.id}</span>
+                          <span className="text-[10px] text-zinc-500 block truncate">
+                            ID: {u.id}
+                          </span>
                         </div>
                         <span className="font-extrabold text-rose-400 shrink-0 bg-rose-950/20 border border-rose-900/40 px-1.5 py-0.5 rounded text-[10px]">
                           {u.count} errors

@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased] — M8: AI Assistant
 
 ### Added
+
 - **AI Error Explanation** — `POST /api/v1/issues/:issueId/ai/explain`  
   Server-side Gemini integration that analyzes the issue's stack trace and error message to produce a structured root-cause explanation. Responses are cached by SHA-256 fingerprint; `?force=true` bypasses cache.
 - **AI Fix Suggestion** — `POST /api/v1/issues/:issueId/ai/suggest-fix`  
@@ -23,9 +24,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **@google/generative-ai** SDK added as a runtime dependency.
 
 ### Changed
+
 - `IssueDetailClient.tsx` — Added AI Assistant section in the right column sidebar above the triage box.
 
 ### Environment Variables
+
 - `GEMINI_API_KEY` — Required for AI features. Already documented in `.env.example`.
 - `AI_DAILY_LIMIT` — Documented limit (currently not server-enforced at org level; per-user hourly limit is enforced via DB).
 
@@ -34,6 +37,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M7] — Audit Log & Settings
 
 ### Added
+
 - Organization settings (rename, danger-zone deletion)
 - User profile settings (display name, session revocation)
 - Security Audit Log viewer (paginated, filterable, JSON diff modal)
@@ -44,6 +48,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M6] — Alerts & Notifications
 
 ### Added
+
 - Alert engine: new-issue, regression, spike detection with cooldown
 - In-app notification center
 - Async email worker (Resend)
@@ -54,6 +59,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M5] — Issue Detail & Collaboration
 
 ### Added
+
 - Collapsible stack trace viewer with source context
 - Event occurrence navigation
 - Comment and mention system (Markdown support)
@@ -65,6 +71,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M4] — Issue Grouping & Management
 
 ### Added
+
 - Stack normalization and deterministic fingerprinting
 - Issue CRUD, status transitions, assignment
 - Search/filter/sort with cursor pagination
@@ -75,6 +82,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M3] — Ingestion & JS SDK
 
 ### Added
+
 - Event ingestion endpoint
 - Idempotency key support
 - Project rate limiting
@@ -86,6 +94,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M2] — Projects & API Keys
 
 ### Added
+
 - Project CRUD
 - Show-once API keys with rotate/revoke
 - SDK setup screen
@@ -95,6 +104,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M1] — Auth & Organization Shell
 
 ### Added
+
 - Email/password and OAuth authentication
 - Email verification and password reset
 - Secure sessions
@@ -106,6 +116,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [M0] — Repository & CI
 
 ### Added
+
 - Next.js TypeScript strict scaffold
 - Prisma and PostgreSQL connection
 - ESLint, Prettier, Vitest, Playwright

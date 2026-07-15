@@ -22,7 +22,9 @@ vi.mock("@/lib/db/client", () => {
 });
 
 vi.mock("@/lib/auth/session", () => ({
-  getSessionUser: vi.fn().mockResolvedValue({ id: "user-1", email: "dev@example.com", displayName: "Dev" }),
+  getSessionUser: vi
+    .fn()
+    .mockResolvedValue({ id: "user-1", email: "dev@example.com", displayName: "Dev" }),
 }));
 
 // Mock Gemini provider
@@ -65,7 +67,8 @@ describe("AI Service Unit Tests", () => {
     });
 
     it("redacts JWT tokens", () => {
-      const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+      const jwt =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
       const { text } = redactSensitiveData(`Authorization: ${jwt}`);
       expect(text).not.toContain(jwt);
       expect(text).toContain("[REDACTED_JWT]");
@@ -133,7 +136,9 @@ describe("AI Service Unit Tests", () => {
   describe("POST /issues/:issueId/ai/explain", () => {
     it("returns cached result when fingerprint matches", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
       vi.mocked(db.aiResult.findFirst).mockResolvedValue({
         id: "result-1",
         content: "Cached explanation",
@@ -141,7 +146,9 @@ describe("AI Service Unit Tests", () => {
         type: "EXPLANATION",
       } as unknown as AiResult);
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(200);
@@ -153,13 +160,24 @@ describe("AI Service Unit Tests", () => {
 
     it("calls Gemini when no cache exists", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
       vi.mocked(db.aiResult.findFirst).mockResolvedValue(null);
       vi.mocked(db.aiResult.count).mockResolvedValue(0);
-      vi.mocked(callGemini).mockResolvedValue({ ok: true, data: { content: "Fresh explanation", model: "gemini-flash" } });
-      vi.mocked(db.aiResult.upsert).mockResolvedValue({ id: "r-1", content: "Fresh explanation", model: "gemini-flash" } as unknown as AiResult);
+      vi.mocked(callGemini).mockResolvedValue({
+        ok: true,
+        data: { content: "Fresh explanation", model: "gemini-flash" },
+      });
+      vi.mocked(db.aiResult.upsert).mockResolvedValue({
+        id: "r-1",
+        content: "Fresh explanation",
+        model: "gemini-flash",
+      } as unknown as AiResult);
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(200);
@@ -168,11 +186,15 @@ describe("AI Service Unit Tests", () => {
 
     it("returns 429 when rate limit is exceeded", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
       vi.mocked(db.aiResult.findFirst).mockResolvedValue(null);
       vi.mocked(db.aiResult.count).mockResolvedValue(10); // at limit
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(429);
@@ -180,12 +202,19 @@ describe("AI Service Unit Tests", () => {
 
     it("returns 502 when Gemini is unavailable", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
       vi.mocked(db.aiResult.findFirst).mockResolvedValue(null);
       vi.mocked(db.aiResult.count).mockResolvedValue(0);
-      vi.mocked(callGemini).mockResolvedValue({ ok: false, error: { code: "PROVIDER_UNAVAILABLE", message: "Service down" } });
+      vi.mocked(callGemini).mockResolvedValue({
+        ok: false,
+        error: { code: "PROVIDER_UNAVAILABLE", message: "Service down" },
+      });
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(502);
@@ -195,7 +224,9 @@ describe("AI Service Unit Tests", () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
       vi.mocked(db.membership.findFirst).mockResolvedValue(null); // no matching Member+ role
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(403);
@@ -204,7 +235,9 @@ describe("AI Service Unit Tests", () => {
     it("returns 404 for unknown issue", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(null);
 
-      const req = new NextRequest("http://localhost/api/v1/issues/bad-id/ai/explain", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/bad-id/ai/explain", {
+        method: "POST",
+      });
       const res = await postExplain(req, { params: Promise.resolve({ issueId: "bad-id" }) });
 
       expect(res.status).toBe(404);
@@ -215,13 +248,24 @@ describe("AI Service Unit Tests", () => {
   describe("POST /issues/:issueId/ai/suggest-fix", () => {
     it("returns 200 with fresh fix suggestion", async () => {
       vi.mocked(db.issue.findFirst).mockResolvedValue(MOCK_ISSUE as unknown as Issue);
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
       vi.mocked(db.aiResult.findFirst).mockResolvedValue(null);
       vi.mocked(db.aiResult.count).mockResolvedValue(0);
-      vi.mocked(callGemini).mockResolvedValue({ ok: true, data: { content: "## Fix\n```js\nfix()\n```", model: "gemini-flash" } });
-      vi.mocked(db.aiResult.upsert).mockResolvedValue({ id: "r-2", content: "## Fix\n```js\nfix()\n```", model: "gemini-flash" } as unknown as AiResult);
+      vi.mocked(callGemini).mockResolvedValue({
+        ok: true,
+        data: { content: "## Fix\n```js\nfix()\n```", model: "gemini-flash" },
+      });
+      vi.mocked(db.aiResult.upsert).mockResolvedValue({
+        id: "r-2",
+        content: "## Fix\n```js\nfix()\n```",
+        model: "gemini-flash",
+      } as unknown as AiResult);
 
-      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/suggest-fix", { method: "POST" });
+      const req = new NextRequest("http://localhost/api/v1/issues/issue-1/ai/suggest-fix", {
+        method: "POST",
+      });
       const res = await postFix(req, { params: Promise.resolve({ issueId: "issue-1" }) });
 
       expect(res.status).toBe(200);
@@ -237,8 +281,13 @@ describe("AI Service Unit Tests", () => {
         id: "r-1",
         issue: { project: { organizationId: "org-1" } },
       } as unknown as AiResult & { issue: { project: { organizationId: string } } });
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
-      vi.mocked(db.aiResult.update).mockResolvedValue({ id: "r-1", feedback: "HELPFUL" } as unknown as AiResult);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
+      vi.mocked(db.aiResult.update).mockResolvedValue({
+        id: "r-1",
+        feedback: "HELPFUL",
+      } as unknown as AiResult);
 
       const req = new NextRequest("http://localhost/api/v1/ai-results/r-1/feedback", {
         method: "POST",
@@ -259,7 +308,9 @@ describe("AI Service Unit Tests", () => {
         id: "r-1",
         issue: { project: { organizationId: "org-1" } },
       } as unknown as AiResult & { issue: { project: { organizationId: string } } });
-      vi.mocked(db.membership.findFirst).mockResolvedValue(MOCK_MEMBERSHIP as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue(
+        MOCK_MEMBERSHIP as unknown as Membership
+      );
 
       const req = new NextRequest("http://localhost/api/v1/ai-results/r-1/feedback", {
         method: "POST",

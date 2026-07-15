@@ -91,13 +91,17 @@ describe("Audit Logs & Settings Unit Tests", () => {
 
   describe("Audit Logs API Endpoint", () => {
     it("should fetch paginated audit logs for members", async () => {
-      vi.mocked(db.membership.findFirst).mockResolvedValue({ id: "mem-1" } as unknown as Membership);
+      vi.mocked(db.membership.findFirst).mockResolvedValue({
+        id: "mem-1",
+      } as unknown as Membership);
       vi.mocked(db.auditLog.count).mockResolvedValue(1);
       vi.mocked(db.auditLog.findMany).mockResolvedValue([
         { id: "log-1", actionType: "PROJECT_CREATE" },
       ] as unknown as AuditLog[]);
 
-      const req = new NextRequest("http://localhost/api/v1/organizations/org-1/audit-log?page=1&pageSize=10");
+      const req = new NextRequest(
+        "http://localhost/api/v1/organizations/org-1/audit-log?page=1&pageSize=10"
+      );
       const res = await getAuditLogs(req, { params: Promise.resolve({ orgId: "org-1" }) });
 
       expect(res.status).toBe(200);
@@ -149,9 +153,13 @@ describe("Audit Logs & Settings Unit Tests", () => {
         }
         return null;
       }) as unknown as never);
-      vi.mocked(db.organization.update).mockResolvedValue({ id: "org-1" } as unknown as Organization);
+      vi.mocked(db.organization.update).mockResolvedValue({
+        id: "org-1",
+      } as unknown as Organization);
 
-      const req = new NextRequest("http://localhost/api/v1/organizations/org-1", { method: "DELETE" });
+      const req = new NextRequest("http://localhost/api/v1/organizations/org-1", {
+        method: "DELETE",
+      });
       const res = await deleteOrg(req, { params: Promise.resolve({ orgId: "org-1" }) });
 
       expect(res.status).toBe(200);
@@ -177,7 +185,10 @@ describe("Audit Logs & Settings Unit Tests", () => {
     });
 
     it("should allow session user to update display name", async () => {
-      vi.mocked(db.user.update).mockResolvedValue({ id: "user-1", displayName: "New Name" } as unknown as User);
+      vi.mocked(db.user.update).mockResolvedValue({
+        id: "user-1",
+        displayName: "New Name",
+      } as unknown as User);
 
       const req = new NextRequest("http://localhost/api/v1/me", {
         method: "PATCH",
@@ -205,10 +216,15 @@ describe("Audit Logs & Settings Unit Tests", () => {
     });
 
     it("should revoke specified session", async () => {
-      vi.mocked(db.session.findUnique).mockResolvedValue({ id: "sess-1", userId: "user-1" } as unknown as Session);
+      vi.mocked(db.session.findUnique).mockResolvedValue({
+        id: "sess-1",
+        userId: "user-1",
+      } as unknown as Session);
       vi.mocked(db.session.update).mockResolvedValue({ id: "sess-1" } as unknown as Session);
 
-      const req = new NextRequest("http://localhost/api/v1/me/sessions/sess-1", { method: "DELETE" });
+      const req = new NextRequest("http://localhost/api/v1/me/sessions/sess-1", {
+        method: "DELETE",
+      });
       const res = await revokeSession(req, { params: Promise.resolve({ sessionId: "sess-1" }) });
 
       expect(res.status).toBe(200);

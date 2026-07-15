@@ -78,7 +78,10 @@ function MarkdownContent({ content }: { content: string }) {
 
     if (line.startsWith("## ")) {
       elements.push(
-        <h3 key={`h3-${keyCounter++}`} className="text-sm font-bold text-white mt-4 mb-1.5 flex items-center gap-1.5">
+        <h3
+          key={`h3-${keyCounter++}`}
+          className="text-sm font-bold text-white mt-4 mb-1.5 flex items-center gap-1.5"
+        >
           <span className="w-1 h-4 bg-emerald-500 rounded-full shrink-0" />
           {line.slice(3)}
         </h3>
@@ -190,34 +193,31 @@ export function AiPanel({ issueId }: AiPanelProps) {
     [issueId]
   );
 
-  const submitFeedback = useCallback(
-    async (resultId: string, value: "HELPFUL" | "NOT_HELPFUL") => {
-      setFeedback((prev) => ({ ...prev, [resultId]: "submitting" }));
-      try {
-        const res = await fetch(`/api/v1/ai-results/${resultId}/feedback`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ feedback: value }),
-        });
-        if (res.ok) {
-          setFeedback((prev) => ({ ...prev, [resultId]: value }));
-        } else {
-          setFeedback((prev) => {
-            const next = { ...prev };
-            delete next[resultId];
-            return next;
-          });
-        }
-      } catch {
+  const submitFeedback = useCallback(async (resultId: string, value: "HELPFUL" | "NOT_HELPFUL") => {
+    setFeedback((prev) => ({ ...prev, [resultId]: "submitting" }));
+    try {
+      const res = await fetch(`/api/v1/ai-results/${resultId}/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedback: value }),
+      });
+      if (res.ok) {
+        setFeedback((prev) => ({ ...prev, [resultId]: value }));
+      } else {
         setFeedback((prev) => {
           const next = { ...prev };
           delete next[resultId];
           return next;
         });
       }
-    },
-    []
-  );
+    } catch {
+      setFeedback((prev) => {
+        const next = { ...prev };
+        delete next[resultId];
+        return next;
+      });
+    }
+  }, []);
 
   const copyToClipboard = useCallback(async (text: string, id: string) => {
     try {
@@ -229,11 +229,7 @@ export function AiPanel({ issueId }: AiPanelProps) {
     }
   }, []);
 
-  const renderResult = (
-    result: AiResult,
-    state: PanelState,
-    onRegenerate: () => void
-  ) => {
+  const renderResult = (result: AiResult, state: PanelState, onRegenerate: () => void) => {
     const feedbackStatus = feedback[result.id];
     return (
       <div className="space-y-4">
@@ -281,16 +277,20 @@ export function AiPanel({ issueId }: AiPanelProps) {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-200 transition-all"
           >
             {copiedId === result.id ? (
-              <><Check className="h-3 w-3 text-emerald-400" /> Copied</>
+              <>
+                <Check className="h-3 w-3 text-emerald-400" /> Copied
+              </>
             ) : (
-              <><Copy className="h-3 w-3" /> Copy</>
+              <>
+                <Copy className="h-3 w-3" /> Copy
+              </>
             )}
           </button>
 
-          {feedbackStatus === "submitted" || feedbackStatus === "HELPFUL" || feedbackStatus === "NOT_HELPFUL" ? (
-            <span className="text-[11px] text-zinc-500 px-2">
-              Thanks for the feedback
-            </span>
+          {feedbackStatus === "submitted" ||
+          feedbackStatus === "HELPFUL" ||
+          feedbackStatus === "NOT_HELPFUL" ? (
+            <span className="text-[11px] text-zinc-500 px-2">Thanks for the feedback</span>
           ) : (
             <>
               <button
@@ -346,7 +346,11 @@ export function AiPanel({ issueId }: AiPanelProps) {
               <div className="text-[11px] text-zinc-500">Plain-language root cause analysis</div>
             </div>
           </div>
-          {showExplain ? <ChevronUp className="h-4 w-4 text-zinc-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+          {showExplain ? (
+            <ChevronUp className="h-4 w-4 text-zinc-500" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-zinc-500" />
+          )}
         </button>
 
         {showExplain && (
@@ -354,7 +358,8 @@ export function AiPanel({ issueId }: AiPanelProps) {
             {explainState === "idle" && (
               <div className="pt-4 flex flex-col items-start gap-3">
                 <p className="text-xs text-zinc-500">
-                  AI will analyze the stack trace and error message to explain the likely root cause.
+                  AI will analyze the stack trace and error message to explain the likely root
+                  cause.
                 </p>
                 <button
                   type="button"
@@ -382,7 +387,10 @@ export function AiPanel({ issueId }: AiPanelProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => { setExplainState("idle"); setExplainError(null); }}
+                  onClick={() => {
+                    setExplainState("idle");
+                    setExplainError(null);
+                  }}
                   className="text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2"
                 >
                   Try again
@@ -415,7 +423,11 @@ export function AiPanel({ issueId }: AiPanelProps) {
               <div className="text-[11px] text-zinc-500">Reviewable code-level suggestion</div>
             </div>
           </div>
-          {showFix ? <ChevronUp className="h-4 w-4 text-zinc-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
+          {showFix ? (
+            <ChevronUp className="h-4 w-4 text-zinc-500" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-zinc-500" />
+          )}
         </button>
 
         {showFix && (
@@ -423,8 +435,10 @@ export function AiPanel({ issueId }: AiPanelProps) {
             {fixState === "idle" && (
               <div className="pt-4 flex flex-col items-start gap-3">
                 <p className="text-xs text-zinc-500">
-                  AI will suggest a concrete, reviewable fix based on the available stack trace and context.
-                  This suggestion is <strong className="text-zinc-400">not automatically applied</strong> — review before using.
+                  AI will suggest a concrete, reviewable fix based on the available stack trace and
+                  context. This suggestion is{" "}
+                  <strong className="text-zinc-400">not automatically applied</strong> — review
+                  before using.
                 </p>
                 <button
                   type="button"
@@ -452,7 +466,10 @@ export function AiPanel({ issueId }: AiPanelProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => { setFixState("idle"); setFixError(null); }}
+                  onClick={() => {
+                    setFixState("idle");
+                    setFixError(null);
+                  }}
                   className="text-xs text-zinc-500 hover:text-zinc-300 underline underline-offset-2"
                 >
                   Try again

@@ -4,11 +4,7 @@ import { db } from "@/lib/db/client";
 import { redirect } from "next/navigation";
 import { DashboardClient } from "./DashboardClient";
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>;
-}) {
+export default async function DashboardPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
   const user = await getSessionUser();
   if (!user) {

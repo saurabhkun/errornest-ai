@@ -107,7 +107,12 @@ export async function GET(request: NextRequest) {
 
     // Determine interval: hourly for 24h, daily for 7d/30d
     const interval = period === "24h" ? "hour" : "day";
-    const trends: { timestamp: string; eventCount: number; newIssueCount: number; affectedUserCount: number }[] = [];
+    const trends: {
+      timestamp: string;
+      eventCount: number;
+      newIssueCount: number;
+      affectedUserCount: number;
+    }[] = [];
 
     // Initialize buckets
     const start = new Date(fromDate);

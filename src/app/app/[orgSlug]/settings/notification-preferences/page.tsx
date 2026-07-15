@@ -40,7 +40,5 @@ export default async function NotificationPreferencesPage({
     };
   });
 
-  return (
-    <NotificationPreferencesClient initialPreferences={initialPreferences} />
-  );
+  return <NotificationPreferencesClient initialPreferences={initialPreferences} />;
 }
