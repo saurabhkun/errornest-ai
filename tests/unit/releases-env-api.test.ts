@@ -288,20 +288,35 @@ describe("Releases & Environments API Endpoints Unit Tests", () => {
 
     it("GET compare should retrieve metrics delta and new issues", async () => {
       setupAuthAndProjectMocks();
-      vi.mocked(db.release.findFirst).mockImplementation(async (args: any) => {
-        if (args.where.id === releaseId) {
-          return { id: releaseId, projectId, version: "v1.1.0", createdAt: new Date() } as any;
+      vi.mocked(db.release.findFirst).mockImplementation((async (args: {
+        where?: { id?: string };
+      }) => {
+        if (args?.where?.id === releaseId) {
+          return {
+            id: releaseId,
+            projectId,
+            version: "v1.1.0",
+            createdAt: new Date(),
+            commitSha: null,
+            deployedAt: null,
+            createdByUserId: null,
+          };
         }
         return {
           id: "rel-prev",
           projectId,
           version: "v1.0.0",
           createdAt: new Date(Date.now() - 86400000),
-        } as any;
-      });
+          commitSha: null,
+          deployedAt: null,
+          createdByUserId: null,
+        };
+      }) as never);
 
-      vi.mocked(db.analyticsHourly.aggregate).mockImplementation(async (args: any) => {
-        if (args.where.releaseId === releaseId) {
+      vi.mocked(db.analyticsHourly.aggregate).mockImplementation((async (args: {
+        where?: { releaseId?: string };
+      }) => {
+        if (args?.where?.releaseId === releaseId) {
           return {
             _sum: {
               eventCount: 100,
@@ -309,12 +324,12 @@ describe("Releases & Environments API Endpoints Unit Tests", () => {
               affectedUserCount: 20,
               reopenedIssueCount: 2,
             },
-          } as any;
+          };
         }
         return {
           _sum: { eventCount: 50, newIssueCount: 2, affectedUserCount: 10, reopenedIssueCount: 0 },
-        } as any;
-      });
+        };
+      }) as never);
 
       // Mock new issues list
       vi.mocked(db.event.groupBy).mockResolvedValue([{ issueId: "iss-new" }] as any);
