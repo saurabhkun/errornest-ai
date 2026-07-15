@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db/client";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Settings, ShieldAlert, User, Bell, FileText } from "lucide-react";
+import { Settings, ShieldAlert, User, Bell, FileText, Users } from "lucide-react";
 
 interface SettingsLayoutProps {
   children: React.ReactNode;
@@ -70,6 +70,14 @@ export default async function SettingsLayout({ children, params }: SettingsLayou
             >
               <Bell className="h-4.5 w-4.5 text-zinc-500" />
               Notification Preferences
+            </Link>
+
+            <Link
+              href={`/app/${org.slug}/settings/team`}
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60 whitespace-nowrap"
+            >
+              <Users className="h-4.5 w-4.5 text-zinc-500" />
+              Team
             </Link>
 
             <Link
