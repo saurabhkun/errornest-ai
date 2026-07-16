@@ -136,7 +136,6 @@ export function TeamSettingsClient({ org, currentUser, currentUserRole }: TeamSe
     run();
   }, [fetchTeamData]);
 
-
   const handleUpdateRole = async (userId: string, newRole: Role) => {
     setUpdatingRoleUserId(userId);
     try {

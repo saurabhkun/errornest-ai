@@ -30,13 +30,11 @@ vi.mock("@/lib/db/client", () => {
 });
 
 vi.mock("@/lib/auth/session", () => ({
-  getSessionUser: vi
-    .fn()
-    .mockResolvedValue({
-      id: "user-caller",
-      displayName: "Caller User",
-      email: "caller@example.com",
-    }),
+  getSessionUser: vi.fn().mockResolvedValue({
+    id: "user-caller",
+    displayName: "Caller User",
+    email: "caller@example.com",
+  }),
 }));
 
 vi.mock("@/lib/utils/audit", () => ({
