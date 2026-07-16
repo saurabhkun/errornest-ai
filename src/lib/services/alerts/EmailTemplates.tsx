@@ -548,3 +548,86 @@ export function SpikeEmail({
     </BaseLayout>
   );
 }
+
+interface InviteEmailProps {
+  orgName: string;
+  invitedBy: string;
+  inviteUrl: string;
+}
+
+export function InviteEmail({ orgName, invitedBy, inviteUrl }: InviteEmailProps) {
+  return (
+    <BaseLayout
+      title={`Invitation to join ${orgName}`}
+      previewText={`You have been invited to join ${orgName} on ErrorNest`}
+    >
+      <h2
+        style={{
+          color: "#ffffff",
+          fontSize: "20px",
+          fontWeight: "bold",
+          margin: "0 0 16px 0",
+        }}
+      >
+        You've Been Invited!
+      </h2>
+      <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#a1a1aa", margin: "0 0 24px 0" }}>
+        <strong>{invitedBy}</strong> has invited you to join the <strong>{orgName}</strong>{" "}
+        organization on ErrorNest.
+      </p>
+
+      <table
+        role="presentation"
+        width="100%"
+        cellPadding="0"
+        cellSpacing="0"
+        style={{
+          backgroundColor: "#09090b",
+          border: "1px solid #27272a",
+          borderRadius: "8px",
+          padding: "16px",
+          margin: "0 0 24px 0",
+        }}
+      >
+        <tr>
+          <td>
+            <span
+              style={{
+                fontSize: "10px",
+                fontWeight: "bold",
+                color: "#71717a",
+                textTransform: "uppercase",
+              }}
+            >
+              Organization
+            </span>
+            <div
+              style={{ fontSize: "14px", color: "#ffffff", marginTop: "2px", fontWeight: "bold" }}
+            >
+              {orgName}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <a
+        href={inviteUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-block",
+          backgroundColor: "#059669",
+          color: "#ffffff",
+          fontSize: "14px",
+          fontWeight: "semibold",
+          textDecoration: "none",
+          padding: "12px 24px",
+          borderRadius: "6px",
+          textAlign: "center",
+        }}
+      >
+        Accept Invitation
+      </a>
+    </BaseLayout>
+  );
+}

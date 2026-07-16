@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Project Rate Limiting
     const rateLimit = 150; // allow 150 events per minute
-    const { limited, retryAfter } = checkRateLimit(hashedKey, rateLimit, 60000);
+    const { limited, retryAfter } = await checkRateLimit(hashedKey, rateLimit, 60000);
     if (limited) {
       const ratelimitHeaders = new Headers(responseHeaders);
       ratelimitHeaders.set("Retry-After", String(retryAfter));

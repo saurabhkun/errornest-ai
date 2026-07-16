@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth/session";
 import { createAuditLog } from "@/lib/utils/audit";
 import { z } from "zod";
 import crypto from "crypto";
+import { EmailDispatcher } from "@/lib/services/alerts/EmailDispatcher";
 
 const createInviteSchema = z.object({
   email: z.string().email("Valid email is required"),
@@ -83,6 +84,7 @@ export async function POST(
         status: "ACTIVE",
         role: { in: ["OWNER", "ADMIN"] },
       },
+      include: { organization: true },
     });
 
     if (!callerMembership) {
@@ -179,6 +181,18 @@ export async function POST(
       targetType: "Invite",
       targetId: invite.id,
       afterState: { email, role },
+    });
+
+    // Send the invite email asynchronously
+    const orgName = callerMembership?.organization?.name || "ErrorNest Workspace";
+    const invitedBy = user.displayName || user.email;
+    EmailDispatcher.sendInviteEmail({
+      email,
+      orgName,
+      invitedBy,
+      token,
+    }).catch((err) => {
+      console.error("Failed to send invite email asynchronously:", err);
     });
 
     return NextResponse.json({ data: invite }, { status: 201, headers: responseHeaders });
