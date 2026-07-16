@@ -1,4 +1,14 @@
 import React from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ErrorNest — AI-Powered Error Monitoring & Debugging",
+  description:
+    "Capture, group, and explain application exceptions in real time with context-aware AI. Get started free.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function Home() {
   return (
@@ -7,13 +17,19 @@ export default function Home() {
       <header className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-mono font-bold text-white text-lg tracking-tighter">
+            <div
+              className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-mono font-bold text-white text-lg tracking-tighter"
+              aria-hidden="true"
+            >
               EN
             </div>
             <span className="font-semibold text-lg tracking-tight text-white">ErrorNest</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm text-zinc-400 font-medium">
+          <nav
+            className="hidden md:flex items-center gap-8 text-sm text-zinc-400 font-medium"
+            aria-label="Marketing navigation"
+          >
             <a href="#features" className="hover:text-zinc-200 transition-colors">
               Features
             </a>
@@ -24,7 +40,7 @@ export default function Home() {
               FAQ
             </a>
             <a
-              href="https://github.com"
+              href="https://github.com/saurabhkun/errornest-ai"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-zinc-200 transition-colors"
@@ -37,14 +53,14 @@ export default function Home() {
             <a
               id="login-btn"
               href="/login"
-              className="text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-colors px-3 py-1.5"
+              className="text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-colors px-3 py-1.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
             >
               Sign In
             </a>
             <a
               id="signup-btn"
               href="/signup"
-              className="text-sm font-medium bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors px-4 py-2 rounded-md shadow-sm"
+              className="text-sm font-medium bg-zinc-100 text-zinc-950 hover:bg-zinc-200 transition-colors px-4 py-2 rounded-md shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
             >
               Get Started
             </a>
@@ -53,14 +69,23 @@ export default function Home() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-24 sm:py-32 border-b border-zinc-900">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-transparent to-transparent pointer-events-none" />
+          <div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-red-950/20 via-transparent to-transparent pointer-events-none"
+            aria-hidden="true"
+          />
           <div className="max-w-5xl mx-auto px-6 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/5 text-red-400 text-xs font-medium mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              Now in pre-development (M0 scaffolding complete)
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/5 text-red-400 text-xs font-medium mb-6"
+              role="status"
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"
+                aria-hidden="true"
+              />
+              v1.0.0 Production Release
             </div>
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white mb-8 max-w-4xl mx-auto leading-tight">
               Calm during failure.
@@ -75,14 +100,14 @@ export default function Home() {
               <a
                 id="hero-cta-btn"
                 href="/signup"
-                className="w-full sm:w-auto text-center px-6 py-3 rounded-md bg-red-600 hover:bg-red-500 text-white font-medium shadow-lg hover:shadow-red-600/10 transition-all"
+                className="w-full sm:w-auto text-center px-6 py-3 rounded-md bg-red-600 hover:bg-red-500 text-white font-medium shadow-lg hover:shadow-red-600/10 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
               >
                 Start Monitoring Free
               </a>
               <a
                 id="hero-docs-btn"
                 href="#sdk"
-                className="w-full sm:w-auto text-center px-6 py-3 rounded-md border border-zinc-800 hover:bg-zinc-900 text-zinc-300 font-medium transition-colors"
+                className="w-full sm:w-auto text-center px-6 py-3 rounded-md border border-zinc-800 hover:bg-zinc-900 text-zinc-300 font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
               >
                 Read SDK Docs
               </a>
@@ -91,9 +116,16 @@ export default function Home() {
         </section>
 
         {/* Feature Cards Grid */}
-        <section id="features" className="py-20 max-w-7xl mx-auto px-6">
+        <section
+          id="features"
+          className="py-20 max-w-7xl mx-auto px-6"
+          aria-labelledby="features-heading"
+        >
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4">
+            <h2
+              id="features-heading"
+              className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4"
+            >
               Built for modern developer workflows
             </h2>
             <p className="text-zinc-400 max-w-xl mx-auto text-sm sm:text-base">
@@ -102,10 +134,16 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8" role="list">
             {/* Grouping Card */}
-            <div className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100">
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -121,11 +159,17 @@ export default function Home() {
                 normalization engine filters out volatile identifiers like line numbers or query
                 strings from traces.
               </p>
-            </div>
+            </article>
 
             {/* AI Explanation Card */}
-            <div className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100">
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -140,11 +184,17 @@ export default function Home() {
                 Receive plain-language summaries detailing why an exception occurred and which
                 component is implicated, generated server-side using secure Gemini integrations.
               </p>
-            </div>
+            </article>
 
             {/* Alerting Card */}
-            <div className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100">
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
@@ -159,14 +209,96 @@ export default function Home() {
                 Get notified via email and in-app feeds when new issues are discovered, spikes
                 occur, or resolved issues regress. Configure cooldown windows to mute noise.
               </p>
-            </div>
+            </article>
+
+            {/* Analytics Card */}
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Analytics Dashboard</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Track error trends, release health, environment breakdowns, and affected users
+                through hourly rollups and interactive KPI cards.
+              </p>
+            </article>
+
+            {/* Team Management Card */}
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Team Management</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Invite team members, assign RBAC roles, manage pending invitations, and maintain a
+                complete audit trail of every organizational action.
+              </p>
+            </article>
+
+            {/* Releases Card */}
+            <article
+              className="bg-zinc-900/40 border border-zinc-900 p-8 rounded-xl hover:border-zinc-800 transition-colors"
+              role="listitem"
+            >
+              <div
+                className="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-6 text-zinc-100"
+                aria-hidden="true"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Release Tracking</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Track releases across environments, compare error rates between versions, and
+                monitor deployment health with crash-free session metrics.
+              </p>
+            </article>
           </div>
         </section>
 
         {/* SDK & Installation Flow */}
-        <section id="sdk" className="py-20 border-t border-zinc-900 bg-zinc-950">
+        <section
+          id="sdk"
+          className="py-20 border-t border-zinc-900 bg-zinc-950"
+          aria-labelledby="sdk-heading"
+        >
           <div className="max-w-4xl mx-auto px-6">
-            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4 text-center">
+            <h2
+              id="sdk-heading"
+              className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4 text-center"
+            >
               Install our SDK in minutes
             </h2>
             <p className="text-zinc-400 text-center mb-12 text-sm sm:text-base">
@@ -175,7 +307,7 @@ export default function Home() {
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
               <div className="flex items-center justify-between px-4 py-3 bg-zinc-950 border-b border-zinc-800">
-                <div className="flex gap-2">
+                <div className="flex gap-2" aria-hidden="true">
                   <div className="w-3 h-3 rounded-full bg-zinc-800" />
                   <div className="w-3 h-3 rounded-full bg-zinc-800" />
                   <div className="w-3 h-3 rounded-full bg-zinc-800" />
@@ -198,18 +330,83 @@ ErrorNest.init({
             </div>
           </div>
         </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-20 border-t border-zinc-900" aria-labelledby="faq-heading">
+          <div className="max-w-3xl mx-auto px-6">
+            <h2
+              id="faq-heading"
+              className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-12 text-center"
+            >
+              Frequently Asked Questions
+            </h2>
+            <div className="space-y-6">
+              <details className="group bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden">
+                <summary className="flex items-center justify-between p-5 cursor-pointer text-white font-medium text-sm hover:bg-zinc-900/60 transition-colors list-none">
+                  What AI provider does ErrorNest use?
+                  <span
+                    className="text-zinc-500 group-open:rotate-45 transition-transform text-lg"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </summary>
+                <div className="px-5 pb-5 text-zinc-400 text-sm leading-relaxed">
+                  ErrorNest integrates with Google Gemini for AI-powered error explanations and fix
+                  suggestions. All data is redacted for PII before being sent to the provider, and
+                  the system degrades gracefully if the API key is not configured.
+                </div>
+              </details>
+              <details className="group bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden">
+                <summary className="flex items-center justify-between p-5 cursor-pointer text-white font-medium text-sm hover:bg-zinc-900/60 transition-colors list-none">
+                  Is ErrorNest self-hostable?
+                  <span
+                    className="text-zinc-500 group-open:rotate-45 transition-transform text-lg"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </summary>
+                <div className="px-5 pb-5 text-zinc-400 text-sm leading-relaxed">
+                  Yes. ErrorNest is a standard Next.js application backed by PostgreSQL and can be
+                  deployed anywhere — Vercel, Docker, or bare-metal. See the README for full setup
+                  instructions.
+                </div>
+              </details>
+              <details className="group bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden">
+                <summary className="flex items-center justify-between p-5 cursor-pointer text-white font-medium text-sm hover:bg-zinc-900/60 transition-colors list-none">
+                  How does grouping work?
+                  <span
+                    className="text-zinc-500 group-open:rotate-45 transition-transform text-lg"
+                    aria-hidden="true"
+                  >
+                    +
+                  </span>
+                </summary>
+                <div className="px-5 pb-5 text-zinc-400 text-sm leading-relaxed">
+                  ErrorNest normalizes stack traces by removing volatile data (line numbers, query
+                  strings, memory addresses) and generates a deterministic SHA-256 fingerprint.
+                  Events sharing the same fingerprint are grouped into a single Issue.
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 py-12">
+      <footer className="border-t border-zinc-900 bg-zinc-950 py-12" role="contentinfo">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-zinc-500">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center font-mono font-bold text-white text-xs">
+            <div
+              className="w-5 h-5 rounded bg-zinc-800 flex items-center justify-center font-mono font-bold text-white text-xs"
+              aria-hidden="true"
+            >
               EN
             </div>
             <span>© 2026 ErrorNest. All rights reserved.</span>
           </div>
-          <div className="flex items-center gap-6">
+          <nav className="flex items-center gap-6" aria-label="Footer navigation">
             <a href="#features" className="hover:text-zinc-300 transition-colors">
               Features
             </a>
@@ -219,7 +416,7 @@ ErrorNest.init({
             <a href="/api/health" className="hover:text-zinc-300 transition-colors">
               Health API
             </a>
-          </div>
+          </nav>
         </div>
       </footer>
     </div>

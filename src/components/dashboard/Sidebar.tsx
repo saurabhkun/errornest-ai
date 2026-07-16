@@ -56,7 +56,7 @@ export function Sidebar({ org }: SidebarProps) {
       name: "Team",
       href: `/app/${org.slug}/settings/team`,
       icon: Users2,
-      disabled: true,
+      disabled: false,
     },
     {
       name: "Settings",
@@ -143,9 +143,7 @@ export function Sidebar({ org }: SidebarProps) {
       <div className="p-4 border-t border-zinc-800 overflow-hidden">
         <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
           <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
-          {!isCollapsed && (
-            <span className="text-xs font-medium text-zinc-500">M2 Sandbox Ready</span>
-          )}
+          {!isCollapsed && <span className="text-xs font-medium text-zinc-500">v1.0.0</span>}
         </div>
       </div>
 
