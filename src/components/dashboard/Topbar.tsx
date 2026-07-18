@@ -205,23 +205,23 @@ export function Topbar({ org, projects, user }: TopbarProps) {
   }, [statusFilter, isNotificationsOpen, fetchNotificationsList]);
 
   return (
-    <header className="h-16 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-6 shrink-0 z-20">
+    <header className="z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-surface-sidebar px-6">
       {/* Left: Project Switcher */}
       <div className="relative">
         <button
           onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-sm font-medium text-zinc-200 hover:text-white cursor-pointer select-none"
+          className="flex cursor-pointer select-none items-center gap-2 rounded-xl border border-border bg-surface-elevated px-3 py-1.5 text-sm font-medium text-foreground hover:border-primary/40 hover:bg-surface-hover"
         >
-          <Folder className="h-4 w-4 text-zinc-400" />
+          <Folder className="h-4 w-4 text-muted-foreground" />
           <span>{activeProject ? activeProject.name : "Select Project..."}</span>
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
         </button>
 
         {isProjectDropdownOpen && (
           <>
             <div className="fixed inset-0 z-30" onClick={() => setIsProjectDropdownOpen(false)} />
-            <div className="absolute left-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl py-1 z-40">
-              <div className="px-3 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+            <div className="absolute left-0 z-40 mt-2 w-56 rounded-xl border border-border bg-surface-panel py-1 shadow-panel">
+              <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Switch Project
               </div>
               <div className="max-h-60 overflow-y-auto">
@@ -232,19 +232,19 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                       setIsProjectDropdownOpen(false);
                       router.push(`/app/${org.slug}/projects/${p.slug}`);
                     }}
-                    className={`w-full flex items-center text-left px-3 py-2 text-sm hover:bg-zinc-800 cursor-pointer ${
-                      activeProject?.id === p.id ? "text-emerald-400 font-medium" : "text-zinc-300"
+                    className={`flex w-full cursor-pointer items-center px-3 py-2 text-left text-sm hover:bg-surface-hover ${
+                      activeProject?.id === p.id ? "font-medium text-primary" : "text-foreground"
                     }`}
                   >
                     {p.name}
                   </button>
                 ))}
               </div>
-              <div className="border-t border-zinc-800 mt-1 pt-1">
+              <div className="mt-1 border-t border-border pt-1">
                 <Link
                   href={`/app/${org.slug}/projects`}
                   onClick={() => setIsProjectDropdownOpen(false)}
-                  className="flex items-center px-3 py-2 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                  className="flex items-center px-3 py-2 text-sm text-muted-foreground hover:bg-surface-hover hover:text-foreground"
                 >
                   View All Projects
                 </Link>
@@ -257,14 +257,14 @@ export function Topbar({ org, projects, user }: TopbarProps) {
       {/* Middle: Search Box */}
       <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
         <div className="w-full relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search projects or issues (Cmd + K)..."
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-2 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+            className="w-full rounded-xl border border-border bg-surface-input py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-primary/70 focus:outline-none"
             disabled
           />
-          <kbd className="absolute right-3 top-2.5 h-5 px-1.5 rounded border border-zinc-800 bg-zinc-950 text-[10px] text-zinc-500 font-mono flex items-center justify-center pointer-events-none">
+          <kbd className="pointer-events-none absolute right-3 top-2.5 flex h-5 items-center justify-center rounded border border-border bg-surface-canvas px-1.5 font-mono text-[10px] text-muted-foreground">
             ⌘K
           </kbd>
         </div>
@@ -276,16 +276,16 @@ export function Topbar({ org, projects, user }: TopbarProps) {
         <div className="relative">
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className={`relative p-2 rounded-lg border transition-colors cursor-pointer ${
+            className={`relative cursor-pointer rounded-xl border p-2 transition-colors ${
               isNotificationsOpen
-                ? "border-zinc-700 bg-zinc-900 text-white"
-                : "border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-800 hover:bg-zinc-900"
+                ? "border-border bg-surface-elevated text-foreground"
+                : "border-transparent text-muted-foreground hover:border-border hover:bg-surface-elevated hover:text-foreground"
             }`}
             title="Notifications"
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-[9px] font-bold text-white flex items-center justify-center animate-pulse">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 animate-pulse items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
                 {unreadCount}
               </span>
             )}
@@ -294,13 +294,13 @@ export function Topbar({ org, projects, user }: TopbarProps) {
           {isNotificationsOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setIsNotificationsOpen(false)} />
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl py-1 z-40 flex flex-col max-h-[480px] animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="absolute right-0 z-40 mt-2 flex max-h-[480px] w-80 flex-col rounded-xl border border-border bg-surface-panel py-1 shadow-overlay sm:w-96">
                 {/* Header */}
-                <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-white">Notifications</span>
+                    <span className="text-sm font-bold text-foreground">Notifications</span>
                     {unreadCount > 0 && (
-                      <span className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-900 text-[10px] font-semibold text-emerald-400">
+                      <span className="rounded border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
                         {unreadCount} unread
                       </span>
                     )}
@@ -308,7 +308,7 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllAsRead}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 cursor-pointer"
+                      className="flex cursor-pointer items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
                     >
                       <Check className="h-3 w-3" />
                       <span>Mark all read</span>
@@ -317,7 +317,7 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                 </div>
 
                 {/* Filter Selector */}
-                <div className="px-2 py-1.5 bg-zinc-950/40 border-b border-zinc-800 flex gap-2">
+                <div className="flex gap-2 border-b border-border bg-surface-canvas/60 px-2 py-1.5">
                   <button
                     onClick={() => {
                       setStatusFilter("unread");
@@ -325,8 +325,8 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                     }}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                       statusFilter === "unread"
-                        ? "bg-zinc-800 text-white"
-                        : "text-zinc-450 hover:text-zinc-200"
+                        ? "bg-surface-hover text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     Unread Only
@@ -338,8 +338,8 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                     }}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                       statusFilter === "all"
-                        ? "bg-zinc-800 text-white"
-                        : "text-zinc-450 hover:text-zinc-200"
+                        ? "bg-surface-hover text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     All Notifications
@@ -347,9 +347,9 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                 </div>
 
                 {/* Notification List */}
-                <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/60">
+                <div className="flex-1 divide-y divide-border/60 overflow-y-auto">
                   {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-zinc-500">
+                    <div className="p-8 text-center text-muted-foreground">
                       {isLoading ? (
                         <div className="flex items-center justify-center py-4">
                           <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
@@ -364,31 +364,31 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                         <div
                           key={notif.id}
                           onClick={() => handleNotificationClick(notif)}
-                          className={`p-3.5 hover:bg-zinc-800/40 cursor-pointer transition-colors relative flex items-start gap-3 ${
-                            !notif.readAt ? "bg-zinc-950/30" : ""
+                          className={`relative flex cursor-pointer items-start gap-3 p-3.5 transition-colors hover:bg-surface-hover/40 ${
+                            !notif.readAt ? "bg-surface-canvas/30" : ""
                           }`}
                         >
                           {/* Unread Indicator dot */}
                           {!notif.readAt && (
-                            <span className="absolute top-4 left-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            <span className="absolute left-1.5 top-4 h-1.5 w-1.5 rounded-full bg-primary" />
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-xs font-bold text-zinc-200 truncate">
+                              <span className="truncate text-xs font-bold text-foreground">
                                 {notif.title}
                               </span>
-                              <span className="text-[10px] text-zinc-550 shrink-0">
+                              <span className="shrink-0 text-[10px] text-muted-foreground">
                                 {timeAgo(notif.createdAt)}
                               </span>
                             </div>
-                            <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                               {notif.body}
                             </p>
                           </div>
                           {!notif.readAt && (
                             <button
                               onClick={(e) => handleMarkAsRead(notif.id, e)}
-                              className="p-1 rounded hover:bg-zinc-800 text-zinc-500 hover:text-emerald-400 shrink-0 transition-colors"
+                              className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-surface-hover hover:text-primary"
                               title="Mark as read"
                             >
                               <Eye className="h-3.5 w-3.5" />
@@ -400,7 +400,7 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                         <button
                           onClick={handleLoadMore}
                           disabled={isLoading}
-                          className="w-full py-2.5 text-center text-xs font-semibold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border-t border-zinc-800/50 flex items-center justify-center gap-1.5"
+                          className="flex w-full items-center justify-center gap-1.5 border-t border-border/50 py-2.5 text-center text-xs font-semibold text-muted-foreground hover:bg-surface-hover hover:text-foreground"
                         >
                           {isLoading ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -449,25 +449,25 @@ export function Topbar({ org, projects, user }: TopbarProps) {
           {isUserMenuOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setIsUserMenuOpen(false)} />
-              <div className="absolute right-0 mt-2 w-56 rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl py-1 z-40">
-                <div className="px-3 py-2 border-b border-zinc-800">
-                  <div className="text-sm font-medium text-zinc-200">{user.displayName}</div>
-                  <div className="text-xs text-zinc-500 truncate">{user.email}</div>
+              <div className="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-border bg-surface-panel py-1 shadow-overlay">
+                <div className="border-b border-border px-3 py-2">
+                  <div className="text-sm font-medium text-foreground">{user.displayName}</div>
+                  <div className="truncate text-xs text-muted-foreground">{user.email}</div>
                 </div>
 
                 <div className="py-1">
                   <Link
                     href={`/app/${org.slug}/settings/notification-preferences`}
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
                   >
                     <Sliders className="h-4 w-4" />
                     <span>Notification Settings</span>
                   </Link>
                 </div>
 
-                <div className="py-1 border-t border-zinc-800">
-                  <div className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-650 cursor-not-allowed select-none">
+                <div className="border-t border-border py-1">
+                  <div className="flex cursor-not-allowed select-none items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
                     <LogOut className="h-4 w-4" />
                     <span>Log Out (Demo Mode)</span>
                   </div>
