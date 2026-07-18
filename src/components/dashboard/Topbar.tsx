@@ -205,16 +205,15 @@ export function Topbar({ org, projects, user }: TopbarProps) {
   }, [statusFilter, isNotificationsOpen, fetchNotificationsList]);
 
   return (
-    <header className="z-20 flex h-16 shrink-0 items-center justify-between border-b border-border bg-surface-sidebar px-6">
-      {/* Left: Project Switcher */}
+    <header className="z-20 flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-[rgba(7,12,24,0.85)] px-6 backdrop-blur-xl">
       <div className="relative">
         <button
           onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-          className="flex cursor-pointer select-none items-center gap-2 rounded-xl border border-border bg-surface-elevated px-3 py-1.5 text-sm font-medium text-foreground hover:border-primary/40 hover:bg-surface-hover"
+          className="flex cursor-pointer select-none items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-medium text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-primary/40 hover:bg-white/15"
         >
-          <Folder className="h-4 w-4 text-muted-foreground" />
+          <Folder className="h-4 w-4 text-primary" />
           <span>{activeProject ? activeProject.name : "Select Project..."}</span>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
         </button>
 
         {isProjectDropdownOpen && (
@@ -254,38 +253,36 @@ export function Topbar({ org, projects, user }: TopbarProps) {
         )}
       </div>
 
-      {/* Middle: Search Box */}
       <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-        <div className="w-full relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search projects or issues (Cmd + K)..."
-            className="w-full rounded-xl border border-border bg-surface-input py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-primary/70 focus:outline-none"
+            className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-2 pl-10 pr-4 text-sm text-slate-200 placeholder-slate-500 focus:border-primary/40 focus:outline-none"
             disabled
           />
-          <kbd className="pointer-events-none absolute right-3 top-2.5 flex h-5 items-center justify-center rounded border border-border bg-surface-canvas px-1.5 font-mono text-[10px] text-muted-foreground">
+          <kbd className="pointer-events-none absolute right-3 top-2.5 flex h-5 items-center justify-center rounded border border-white/10 bg-white/10 px-1.5 font-mono text-[10px] text-slate-400">
             ⌘K
           </kbd>
         </div>
       </div>
 
-      {/* Right: Notifications & User */}
       <div className="flex items-center gap-4">
         {/* Alerts Bell Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className={`relative cursor-pointer rounded-xl border p-2 transition-colors ${
+            className={`relative cursor-pointer rounded-2xl border p-2.5 transition-all ${
               isNotificationsOpen
-                ? "border-border bg-surface-elevated text-foreground"
-                : "border-transparent text-muted-foreground hover:border-border hover:bg-surface-elevated hover:text-foreground"
+                ? "border-primary/30 bg-primary/10 text-white"
+                : "border-white/10 bg-white/10 text-slate-300 hover:border-primary/20 hover:bg-white/15 hover:text-white"
             }`}
             title="Notifications"
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-4 min-w-4 animate-pulse items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+              <span className="absolute right-1 top-1 flex h-4 min-w-4 animate-pulse items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
                 {unreadCount}
               </span>
             )}
@@ -424,7 +421,7 @@ export function Topbar({ org, projects, user }: TopbarProps) {
         <div className="relative">
           <button
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-2 py-1.5 pr-3 transition hover:border-primary/20 hover:bg-white/15"
             aria-label="User menu"
           >
             {user.avatarUrl ? (
@@ -433,41 +430,42 @@ export function Topbar({ org, projects, user }: TopbarProps) {
                 alt={user.displayName}
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-full border border-zinc-800"
+                className="h-8 w-8 rounded-full border border-white/10"
                 unoptimized
               />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-sm font-medium text-zinc-300">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-primary/80 to-sky-400/80 text-sm font-semibold text-white">
                 {user.displayName.slice(0, 1)}
               </div>
             )}
-            <span className="hidden sm:inline text-sm font-medium text-zinc-300">
+            <span className="hidden sm:inline text-sm font-medium text-slate-200">
               {user.displayName}
             </span>
+            <ChevronDown className="hidden h-3.5 w-3.5 text-slate-400 sm:block" />
           </button>
 
           {isUserMenuOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setIsUserMenuOpen(false)} />
-              <div className="absolute right-0 z-40 mt-2 w-56 rounded-xl border border-border bg-surface-panel py-1 shadow-overlay">
-                <div className="border-b border-border px-3 py-2">
-                  <div className="text-sm font-medium text-foreground">{user.displayName}</div>
-                  <div className="truncate text-xs text-muted-foreground">{user.email}</div>
+              <div className="absolute right-0 z-40 mt-2 w-56 rounded-2xl border border-white/10 bg-slate-950/95 py-1 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur">
+                <div className="border-b border-white/10 px-3 py-2">
+                  <div className="text-sm font-medium text-white">{user.displayName}</div>
+                  <div className="truncate text-xs text-slate-400">{user.email}</div>
                 </div>
 
                 <div className="py-1">
                   <Link
                     href={`/app/${org.slug}/settings/notification-preferences`}
                     onClick={() => setIsUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
                   >
                     <Sliders className="h-4 w-4" />
                     <span>Notification Settings</span>
                   </Link>
                 </div>
 
-                <div className="border-t border-border py-1">
-                  <div className="flex cursor-not-allowed select-none items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+                <div className="border-t border-white/10 py-1">
+                  <div className="flex cursor-not-allowed select-none items-center gap-2 px-3 py-2 text-sm text-slate-500">
                     <LogOut className="h-4 w-4" />
                     <span>Log Out (Demo Mode)</span>
                   </div>
