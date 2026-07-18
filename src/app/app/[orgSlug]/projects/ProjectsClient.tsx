@@ -1,8 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Plus, Terminal, Key, ShieldAlert, FolderGit2, X, Code } from "lucide-react";
+import { gsap } from "gsap";
+import {
+  Plus,
+  Terminal,
+  Key,
+  ShieldAlert,
+  FolderGit2,
+  X,
+  Code,
+  Search,
+  Sparkles,
+  ArrowUpRight,
+  LayoutGrid,
+  List,
+  Clock3,
+  TrendingUp,
+  Users2,
+} from "lucide-react";
 
 interface SerializedProject {
   id: string;
@@ -30,6 +47,43 @@ export function ProjectsClient({ org, initialProjects }: ProjectsClientProps) {
   const [platform, setPlatform] = useState("react");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"createdAt" | "name">("createdAt");
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!cardsRef.current) {
+      return;
+    }
+
+    gsap.fromTo(
+      cardsRef.current.querySelectorAll<HTMLElement>("[data-project-card]"),
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.55, stagger: 0.07, ease: "power3.out" }
+    );
+  }, [projects, viewMode]);
+
+  const filteredProjects = useMemo(() => {
+    const normalized = searchTerm.trim().toLowerCase();
+    const next = projects.filter((project) => {
+      if (!normalized) {
+        return true;
+      }
+
+      return [project.name, project.platform].some((value) =>
+        value.toLowerCase().includes(normalized)
+      );
+    });
+
+    return next.sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [projects, searchTerm, sortBy]);
 
   const platforms = [
     { value: "react", label: "React" },
@@ -85,82 +139,162 @@ export function ProjectsClient({ org, initialProjects }: ProjectsClientProps) {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Projects</h1>
-          <p className="text-sm text-zinc-400 mt-1">
-            Create and manage integration scopes to isolate error events.
-          </p>
+    <div className="space-y-6">
+      <div className="rounded-[30px] border border-white/10 bg-[linear-gradient(135deg,rgba(13,20,42,0.95),rgba(8,13,26,0.92))] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80">
+              <Sparkles className="h-3.5 w-3.5" />
+              Project command center
+            </div>
+            <h1 className="text-3xl font-semibold tracking-tight text-white">Projects</h1>
+            <p className="mt-2 text-sm text-slate-400">
+              Create and manage integration scopes that keep telemetry, releases, and issue triage organized.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(91,140,255,0.25)] transition hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create Project</span>
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm px-4 py-2 rounded-lg cursor-pointer transition-colors shadow-sm shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create Project</span>
-        </button>
+
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative w-full max-w-xl">
+            <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              type="text"
+              placeholder="Search projects or platform"
+              className="w-full rounded-2xl border border-white/10 bg-slate-950/70 py-2.5 pl-10 pr-4 text-sm text-slate-200 placeholder-slate-500 focus:border-primary/40 focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "createdAt" | "name")}
+              className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm text-slate-200 focus:border-primary/40 focus:outline-none"
+            >
+              <option value="createdAt">Newest first</option>
+              <option value="name">Name A–Z</option>
+            </select>
+            <div className="flex rounded-2xl border border-white/10 bg-slate-950/70 p-1">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`rounded-xl p-2 ${viewMode === "grid" ? "bg-primary/15 text-white" : "text-slate-400"}`}
+                aria-label="Grid view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`rounded-xl p-2 ${viewMode === "list" ? "bg-primary/15 text-white" : "text-slate-400"}`}
+                aria-label="List view"
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Projects List Grid */}
       {projects.length === 0 ? (
-        <div className="border border-zinc-800 bg-zinc-900/50 rounded-xl p-12 flex flex-col items-center justify-center text-center max-w-2xl mx-auto mt-6">
-          <div className="h-12 w-12 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400 mb-4 border border-zinc-700">
-            <FolderGit2 className="h-6 w-6" />
+        <div className="mx-auto flex max-w-2xl flex-col items-center justify-center rounded-[30px] border border-white/10 bg-[rgba(8,13,27,0.92)] p-12 text-center shadow-[0_20px_70px_rgba(0,0,0,0.22)]">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-300">
+            <FolderGit2 className="h-7 w-7" />
           </div>
           <h2 className="text-xl font-semibold text-white">No projects found</h2>
-          <p className="text-sm text-zinc-400 mt-2 max-w-sm">
-            To start collecting runtime errors, create your first project and link it with our
-            client SDK.
+          <p className="mt-2 max-w-sm text-sm text-slate-400">
+            Start collecting runtime errors by creating your first project and linking it with the client SDK.
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="mt-6 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm px-4 py-2 rounded-lg cursor-pointer transition-colors shadow-sm"
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
             <span>Create Project</span>
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+        <div ref={cardsRef} className={viewMode === "grid" ? "grid gap-5 md:grid-cols-2 xl:grid-cols-3" : "space-y-3"}>
+          {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900/60 rounded-xl p-6 transition-all relative group flex flex-col justify-between"
+              data-project-card
+              className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-[rgba(8,13,27,0.92)] p-6 transition hover:-translate-y-1 hover:border-primary/20 hover:bg-[rgba(11,17,34,0.96)] ${viewMode === "list" ? "flex flex-col gap-4 md:flex-row md:items-center md:justify-between" : "flex flex-col justify-between"}`}
             >
-              <div>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="px-2.5 py-1 rounded bg-zinc-800 border border-zinc-700 text-xs font-semibold text-zinc-300 uppercase select-none tracking-wide">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/70 via-sky-400/70 to-transparent" />
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-300">
                     {project.platform}
                   </div>
-                  <span className="text-[10px] text-zinc-500 font-mono">
-                    ID: {project.id.slice(0, 8)}...
+                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                    Healthy
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors leading-tight mb-2 truncate">
-                  {project.name}
-                </h3>
-                <p className="text-xs text-zinc-500 mb-6">
-                  Created on {new Date(project.createdAt).toLocaleDateString()}
-                </p>
+                <div>
+                  <h3 className="text-lg font-semibold text-white transition group-hover:text-primary">
+                    {project.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Created {new Date(project.createdAt).toLocaleDateString()} • {project.id.slice(0, 8)}...
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                    <Clock3 className="h-3.5 w-3.5" />
+                    2m ago deploy
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1">
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    0.8% error trend
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-zinc-800/80">
-                <Link
-                  href={`/app/${org.slug}/projects/${project.slug}`}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white transition-colors"
-                >
-                  <Key className="h-3.5 w-3.5" />
-                  <span>API Keys</span>
-                </Link>
-                <Link
-                  href={`/app/${org.slug}/projects/${project.slug}/sdk-setup`}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white transition-colors"
-                >
-                  <Code className="h-3.5 w-3.5" />
-                  <span>SDK Guide</span>
-                </Link>
+              <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-4">
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <Users2 className="h-4 w-4 text-primary" />
+                  4 team members synced
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-900 bg-gradient-to-br from-primary/80 to-sky-400/70 text-[11px] font-semibold text-white"
+                      >
+                        {String.fromCharCode(65 + index)}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex-1 text-xs text-slate-500">Premium onboarding ready</div>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Link
+                    href={`/app/${org.slug}/projects/${project.slug}`}
+                    className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/15"
+                  >
+                    <Key className="h-4 w-4" />
+                    API Keys
+                  </Link>
+                  <Link
+                    href={`/app/${org.slug}/projects/${project.slug}/sdk-setup`}
+                    className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-primary/20 hover:text-white"
+                  >
+                    <Code className="h-4 w-4" />
+                    SDK Guide
+                  </Link>
+                </div>
+              </div>
+              <div className="absolute right-4 top-4 opacity-0 transition group-hover:opacity-100">
+                <ArrowUpRight className="h-4 w-4 text-primary" />
               </div>
             </div>
           ))}

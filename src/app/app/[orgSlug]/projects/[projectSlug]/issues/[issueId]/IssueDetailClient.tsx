@@ -26,6 +26,10 @@ import {
   Trash2,
   Check,
   CornerDownRight,
+  Sparkles,
+  ShieldAlert,
+  Rocket,
+  Layers3,
 } from "lucide-react";
 
 interface Member {
@@ -557,25 +561,27 @@ export function IssueDetailClient({
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb & Navigation */}
-      <div className="flex items-center gap-4 text-xs text-zinc-400">
+      <div className="flex items-center gap-4 text-xs text-slate-400">
         <Link
           href={`/app/${org.slug}/projects/${project.slug}/issues`}
-          className="flex items-center gap-1.5 hover:text-zinc-200 transition-colors py-1 px-2.5 rounded border border-zinc-800 bg-zinc-900/60 font-semibold text-zinc-300"
+          className="flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/10 px-2.5 py-1 font-semibold text-slate-300 transition-colors hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Issues
         </Link>
-        <ChevronRight className="h-3.5 w-3.5 text-zinc-700" />
-        <span className="text-zinc-500">Issue Details</span>
-        <ChevronRight className="h-3.5 w-3.5 text-zinc-700" />
-        <span className="text-zinc-200 font-mono truncate max-w-xs">{issue.id}</span>
+        <ChevronRight className="h-3.5 w-3.5 text-slate-700" />
+        <span className="text-slate-500">Issue Details</span>
+        <ChevronRight className="h-3.5 w-3.5 text-slate-700" />
+        <span className="max-w-xs truncate font-mono text-slate-200">{issue.id}</span>
       </div>
 
-      {/* Main Header Card */}
-      <div className="border border-zinc-850 bg-zinc-900/35 rounded-xl p-6 space-y-4">
+      <div className="rounded-[30px] border border-white/10 bg-[linear-gradient(135deg,rgba(13,20,42,0.95),rgba(8,13,26,0.92))] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="space-y-1.5 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80">
+                <Sparkles className="h-3.5 w-3.5" />
+                Incident detail
+              </div>
               <span
                 className={`px-2 py-0.5 rounded border text-[9px] font-extrabold tracking-wide uppercase ${getLevelBadgeColor(
                   issue.level
@@ -599,7 +605,7 @@ export function IssueDetailClient({
         </div>
 
         {/* Top Summary Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 pt-3 border-t border-zinc-850/65 text-xs">
+        <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-3 text-xs sm:grid-cols-4 lg:grid-cols-6">
           <div>
             <div className="text-zinc-500 font-medium mb-0.5">Occurrences</div>
             <div className="text-white font-mono font-bold text-base">
@@ -639,18 +645,17 @@ export function IssueDetailClient({
         </div>
       </div>
 
-      {/* Main Grid split: Left Details Tabs, Right Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Tabbed Panels */}
         <div className="lg:col-span-2 space-y-6">
           {/* Tabs header */}
-          <div className="border-b border-zinc-800 flex gap-6 text-sm">
+          <div className="flex gap-6 border-b border-white/10 text-sm">
             <button
               onClick={() => setActiveTab("overview")}
               className={`pb-3 font-semibold transition-all relative ${
                 activeTab === "overview"
-                  ? "text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               Overview
@@ -659,8 +664,8 @@ export function IssueDetailClient({
               onClick={() => setActiveTab("occurrences")}
               className={`pb-3 font-semibold transition-all relative ${
                 activeTab === "occurrences"
-                  ? "text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               Occurrences ({events.length})
@@ -669,8 +674,8 @@ export function IssueDetailClient({
               onClick={() => setActiveTab("tags")}
               className={`pb-3 font-semibold transition-all relative ${
                 activeTab === "tags"
-                  ? "text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               Tags
@@ -679,8 +684,8 @@ export function IssueDetailClient({
               onClick={() => setActiveTab("context")}
               className={`pb-3 font-semibold transition-all relative ${
                 activeTab === "context"
-                  ? "text-emerald-400 border-b-2 border-emerald-500"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "border-b-2 border-primary text-primary"
+                  : "text-slate-500 hover:text-slate-300"
               }`}
             >
               Context

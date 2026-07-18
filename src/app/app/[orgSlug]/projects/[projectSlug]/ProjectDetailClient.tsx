@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { gsap } from "gsap";
 import * as ErrorNestSDK from "@errornest/sdk";
 import {
   Key,
@@ -17,6 +18,13 @@ import {
   X,
   Plus,
   Compass,
+  Sparkles,
+  Activity,
+  Layers3,
+  TerminalSquare,
+  ExternalLink,
+  Rocket,
+  Clock3,
 } from "lucide-react";
 
 interface SerializedKey {
@@ -58,6 +66,7 @@ export function ProjectDetailClient({
   initialEnvironments,
 }: ProjectDetailClientProps) {
   const router = useRouter();
+  const heroRef = useRef<HTMLDivElement | null>(null);
   const [keys, setKeys] = useState<SerializedKey[]>(initialKeys);
   const [environments, setEnvironments] = useState<SerializedEnvironment[]>(initialEnvironments);
   const [activeTab, setActiveTab] = useState<"keys" | "environments">("keys");
@@ -75,6 +84,18 @@ export function ProjectDetailClient({
 
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!heroRef.current) {
+      return;
+    }
+
+    gsap.fromTo(
+      heroRef.current,
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }
+    );
+  }, []);
 
   // States for sending test error
   const [isSendingTest, setIsSendingTest] = useState(false);
@@ -351,35 +372,59 @@ export function ProjectDetailClient({
         <span className="text-zinc-200 font-medium">{project.name}</span>
       </div>
 
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight text-white">{project.name}</h1>
-            <span className="px-2.5 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-xs font-semibold text-zinc-300 uppercase">
-              {project.platform}
-            </span>
+      <div ref={heroRef} className="rounded-[30px] border border-white/10 bg-[linear-gradient(135deg,rgba(13,20,42,0.95),rgba(8,13,26,0.92))] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.28)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary/80">
+              <Sparkles className="h-3.5 w-3.5" />
+              Integration overview
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold tracking-tight text-white">{project.name}</h1>
+              <span className="rounded-full border border-white/10 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-300">
+                {project.platform}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-slate-400">
+              Configure SDK keys, review environments, and keep your release flow connected to the issue stream.
+            </p>
           </div>
-          <p className="text-sm text-zinc-400 mt-1">
-            Configure SDK keys and view settings for integration.
-          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleSendTestError}
+              disabled={isSendingTest}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshCw className={`h-4 w-4 ${isSendingTest ? "animate-spin" : ""}`} />
+              <span>{isSendingTest ? "Sending Test..." : "Send Test Error"}</span>
+            </button>
+            <Link
+              href={`/app/${org.slug}/projects/${project.slug}/sdk-setup`}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary/90 transition hover:bg-primary/15"
+            >
+              <Code className="h-4 w-4" />
+              <span>SDK Instructions</span>
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleSendTestError}
-            disabled={isSendingTest}
-            className="flex items-center justify-center gap-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white font-medium text-sm px-4 py-2 rounded-lg cursor-pointer transition-colors"
-          >
-            <RefreshCw className={`h-4 w-4 ${isSendingTest ? "animate-spin" : ""}`} />
-            <span>{isSendingTest ? "Sending Test..." : "Send Test Error"}</span>
-          </button>
-          <Link
-            href={`/app/${org.slug}/projects/${project.slug}/sdk-setup`}
-            className="flex items-center justify-center gap-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white font-medium text-sm px-4 py-2 rounded-lg transition-colors"
-          >
-            <Code className="h-4 w-4" />
-            <span>SDK Instructions</span>
-          </Link>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {[
+            { label: "Release pulse", value: "Stable", icon: Rocket },
+            { label: "Active environments", value: `${initialEnvironments.filter((env) => !env.isHidden).length}`, icon: Layers3 },
+            { label: "API keys", value: `${initialKeys.length}`, icon: Key },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.label} className="rounded-[24px] border border-white/10 bg-white/8 p-4">
+                <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                  <Icon className="h-3.5 w-3.5 text-primary" />
+                  {item.label}
+                </div>
+                <div className="text-xl font-semibold text-white">{item.value}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -447,26 +492,52 @@ export function ProjectDetailClient({
 
       {activeTab === "keys" ? (
         <>
-          {/* Keys Management Card */}
-          <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl overflow-hidden animate-in fade-in duration-200">
-            <div className="p-6 border-b border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h2 className="text-lg font-bold text-white">Project API Keys</h2>
-                <p className="text-xs text-zinc-400 mt-1">
-                  Use these keys to authenticate events sent to ErrorNest from the SDK.
-                </p>
+          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+            <div className="rounded-[28px] border border-white/10 bg-[rgba(8,13,27,0.92)] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.22)]">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Project API Keys</h2>
+                  <p className="mt-1 text-sm text-slate-400">
+                    Create credentials that allow your SDK to authenticate and stream events into ErrorNest.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setCreatedRawKey(null);
+                    setIsCreateModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Generate Key</span>
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setCreatedRawKey(null);
-                  setIsCreateModalOpen(true);
-                }}
-                className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Generate Key</span>
-              </button>
             </div>
+            <div className="rounded-[28px] border border-white/10 bg-[rgba(8,13,27,0.92)] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.22)]">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                <TerminalSquare className="h-3.5 w-3.5 text-primary" />
+                Quick actions
+              </div>
+              <div className="mt-4 space-y-2">
+                <Link
+                  href={`/app/${org.slug}/projects/${project.slug}/sdk-setup`}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/15"
+                >
+                  <span>Open SDK setup</span>
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+                <button
+                  onClick={handleSendTestError}
+                  className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/15"
+                >
+                  <span>Send a test error</span>
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-[28px] border border-white/10 bg-[rgba(8,13,27,0.92)] shadow-[0_20px_70px_rgba(0,0,0,0.22)]">
 
             {keys.length === 0 ? (
               <div className="p-12 text-center flex flex-col items-center justify-center">
@@ -531,8 +602,7 @@ export function ProjectDetailClient({
             )}
           </div>
 
-          {/* Dangerous Actions Area */}
-          <div className="border border-red-900/40 bg-red-950/5 rounded-xl p-6 space-y-4">
+          <div className="rounded-[28px] border border-red-900/40 bg-red-950/10 p-6">
             <div>
               <h2 className="text-base font-bold text-red-400">Destructive Actions</h2>
               <p className="text-xs text-zinc-400 mt-1">
@@ -549,13 +619,11 @@ export function ProjectDetailClient({
           </div>
         </>
       ) : (
-        /* Environments Management Card */
-        <div className="border border-zinc-800 bg-zinc-900/35 rounded-xl overflow-hidden animate-in fade-in duration-200">
-          <div className="p-6 border-b border-zinc-800">
-            <h2 className="text-lg font-bold text-white">Project Environments</h2>
-            <p className="text-xs text-zinc-400 mt-1">
-              Configure environment display settings and visibility. Hiding an environment will
-              exclude it from dashboard summaries.
+        <div className="rounded-[28px] border border-white/10 bg-[rgba(8,13,27,0.92)] p-6 shadow-[0_20px_70px_rgba(0,0,0,0.22)]">
+          <div className="flex flex-col gap-2 border-b border-white/10 pb-4">
+            <h2 className="text-lg font-semibold text-white">Project Environments</h2>
+            <p className="text-sm text-slate-400">
+              Configure environment display settings and visibility. Hiding an environment will exclude it from dashboard summaries.
             </p>
           </div>
 
