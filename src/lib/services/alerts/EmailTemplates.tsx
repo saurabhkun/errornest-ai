@@ -569,7 +569,7 @@ export function InviteEmail({ orgName, invitedBy, inviteUrl }: InviteEmailProps)
           margin: "0 0 16px 0",
         }}
       >
-        You've Been Invited!
+        You&apos;ve Been Invited!
       </h2>
       <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#a1a1aa", margin: "0 0 24px 0" }}>
         <strong>{invitedBy}</strong> has invited you to join the <strong>{orgName}</strong>{" "}

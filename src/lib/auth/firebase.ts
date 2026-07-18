@@ -20,9 +20,9 @@ const firebaseConfig = {
   measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
-let clientApp: any = null;
-let clientAuth: any = null;
-let adminApp: any = null;
+let clientApp: ReturnType<typeof initClientApp> | null = null;
+let clientAuth: ReturnType<typeof getClientAuth> | null = null;
+let adminApp: ReturnType<typeof initAdminApp> | null = null;
 
 if (process.env.FIREBASE_API_KEY) {
   try {
